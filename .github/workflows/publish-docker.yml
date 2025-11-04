@@ -3,10 +3,10 @@ name: Publish Docker Image
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the main branch
+      - main
     tags:
-      - "v*"  # Trigger when creating new tag with "v" prefix
-  workflow_dispatch:  # Allow manual triggering
+      - "v*"
+  workflow_dispatch:
 
 jobs:
   build-and-push:

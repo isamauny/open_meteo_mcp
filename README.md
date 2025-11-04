@@ -517,9 +517,42 @@ When running in SSE mode, you can integrate the weather server with web applicat
 
 ## Docker Deployment
 
-The project includes Docker configurations for easy deployment:
+The project is available as a Docker image on Docker Hub and includes configurations for easy deployment.
 
-### SSE Mode Docker
+### Quick Start with Docker Hub
+
+Pull and run the latest image directly from Docker Hub:
+
+```bash
+# Pull the latest image
+docker pull dog830228/mcp_weather_server:latest
+
+# Run in stdio mode (default)
+docker run dog830228/mcp_weather_server:latest
+
+# Run in SSE mode on port 8080
+docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode sse
+
+# Run in streamable-http mode on port 8080
+docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode streamable-http
+
+# Pull a specific version
+docker pull dog830228/mcp_weather_server:0.5.0
+docker run -p 8080:8080 dog830228/mcp_weather_server:0.5.0 --mode sse
+```
+
+### Available Docker Images
+
+- **Latest**: `dog830228/mcp_weather_server:latest`
+- **Versioned**: `dog830228/mcp_weather_server:<version>` (e.g., `0.5.0`)
+
+Images are automatically built and published when new versions are released.
+
+### Building from Source
+
+If you want to build the Docker image yourself:
+
+#### Standard Build
 ```bash
 # Build
 docker build -t mcp-weather-server:sse .
@@ -528,10 +561,10 @@ docker build -t mcp-weather-server:sse .
 docker run -p 8081:8081 mcp-weather-server:sse
 
 # Run with custom port
-docker run -p 8080:8080 -e PORT=8080 mcp-weather-server:sse
+docker run -p 8080:8080 mcp-weather-server:local --mode sse
 ```
 
-### Streamable HTTP Mode Docker
+#### Streamable HTTP Build
 ```bash
 # Build using streamable-http Dockerfile
 docker build -f Dockerfile.streamable-http -t mcp-weather-server:streamable-http .
