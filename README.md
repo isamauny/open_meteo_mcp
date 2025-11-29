@@ -1,6 +1,8 @@
 [![smithery badge](https://smithery.ai/badge/@isdaniel/mcp_weather_server)](https://smithery.ai/server/@isdaniel/mcp_weather_server)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/mcp-weather-server)](https://pypi.org/project/mcp-weather-server/)
 [![PyPI - Version](https://img.shields.io/pypi/v/mcp-weather-server)](https://pypi.org/project/mcp-weather-server/)
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/mcp-weather-server?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/mcp-weather-server)
+[![Docker Pulls](https://img.shields.io/docker/pulls/dog830228/mcp_weather_server)](https://hub.docker.com/r/dog830228/mcp_weather_server)
 
 <a href="https://glama.ai/mcp/servers/@isdaniel/mcp_weather_server">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/@isdaniel/mcp_weather_server/badge" />
