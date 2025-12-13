@@ -720,3 +720,6 @@ The server returns structured error messages:
 }
 ```
 
+
+<!-- Need to add this line for MCP registry publication -->
+<!-- mcp-name: io.github.isdaniel/mcp_weather_server -->
