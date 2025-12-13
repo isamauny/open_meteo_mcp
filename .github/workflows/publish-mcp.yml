@@ -2,10 +2,8 @@ name: Publish to MCP Registry
 
 on:
   push:
-    branches:
-      - main
     tags:
-      - "v*"
+      - "v*"  # Only trigger on version tags like v0.6.1, v0.6.2, etc.
   workflow_dispatch:
 
 permissions:
