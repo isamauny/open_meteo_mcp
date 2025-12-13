@@ -10,6 +10,8 @@
 
 # Weather MCP Server
 
+mcp-name: io.github.isdaniel/mcp_weather_server
+
 A Model Context Protocol (MCP) server that provides weather information using the Open-Meteo API. This server supports multiple transport modes: standard stdio, HTTP Server-Sent Events (SSE), and the new Streamable HTTP protocol for web-based integration.
 
 ## Features
