@@ -36,7 +36,7 @@ jobs:
     - name: Check if version exists on PyPI
       id: check_version
       run: |
-        PACKAGE_NAME="mcp_weather_server"
+        PACKAGE_NAME="opwn_meteo_mcp"
         if curl -sSf "https://pypi.org/pypi/${PACKAGE_NAME}/${VERSION}/json" > /dev/null; then
           echo "Version ${VERSION} already exists on PyPI. Skipping publish."
           echo "skip_publish=true" >> $GITHUB_ENV
