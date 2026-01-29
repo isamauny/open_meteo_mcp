@@ -4,7 +4,7 @@ Tests for air quality tool handlers.
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from src.mcp_weather_server.tools.tools_air_quality import (
+from src.open_meteo_mcp.tools.tools_air_quality import (
     GetAirQualityToolHandler,
     GetAirQualityDetailsToolHandler
 )

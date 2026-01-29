@@ -1,3 +1,21 @@
+Metadata-Version: 2.4
+Name: open_meteo_mcp
+Version: 0.1.1
+Summary: An MCP server for weather information
+Author-email: danielshih <dog830228@gmail.com>
+Project-URL: Source, https://github.com/isamauny/open_meteo_mcp
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: mcp[cli]>=1.12.0
+Requires-Dist: httpx>=0.23.1
+Requires-Dist: python-dotenv>=1.1.1
+Requires-Dist: python-dateutil>=2.8.2
+Requires-Dist: starlette>=0.27.0
+Requires-Dist: uvicorn>=0.20.0
+Requires-Dist: tzdata>=2025.2
+Dynamic: license-file
+
 [![smithery badge](https://smithery.ai/badge/@isamauny/open_meteo_mcp)](https://smithery.ai/server/@isamauny/open_meteo_mcp)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/open-meteo-mcp)](https://pypi.org/project/open-meteo-mcp/)
 [![PyPI - Version](https://img.shields.io/pypi/v/open-meteo-mcp)](https://pypi.org/project/open-meteo-mcp/)

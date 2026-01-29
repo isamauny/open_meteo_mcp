@@ -1,0 +1,2 @@
+[console_scripts]
+open_meteo_mcp = open_meteo_mcp:main

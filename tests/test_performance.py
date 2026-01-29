@@ -6,7 +6,7 @@ import pytest
 import asyncio
 import time
 from unittest.mock import AsyncMock, Mock, patch
-from src.mcp_weather_server.server import (
+from src.open_meteo_mcp.server import (
     register_all_tools,
     call_tool,
     tool_handlers
@@ -65,7 +65,7 @@ class TestPerformance:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 start_time = time.time()
                 result = await call_tool("get_current_weather", {"city": "New York"})
                 end_time = time.time()
@@ -118,7 +118,7 @@ class TestPerformance:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Create 10 concurrent requests
                 tasks = [
                     call_tool("get_current_weather", {"city": f"City{i}"})
@@ -146,9 +146,9 @@ class TestPerformance:
 
         fixed_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=ZoneInfo("UTC"))
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("UTC")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
 
                 start_time = time.time()
@@ -210,7 +210,7 @@ class TestPerformance:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Make many sequential requests
                 for i in range(50):
                     result = await call_tool("get_current_weather", {"city": f"City{i}"})
@@ -266,7 +266,7 @@ class TestLoadTesting:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Create a large burst of requests (simulate high load)
                 burst_size = 25
                 tasks = [
@@ -327,11 +327,11 @@ class TestLoadTesting:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+            with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
                 mock_get_tz.return_value = ZoneInfo("UTC")
-                with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+                with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                     mock_datetime.now.return_value = fixed_time
-                    with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+                    with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
 
                         # Create mixed requests
                         tasks = []
@@ -415,7 +415,7 @@ class TestStressConditions:
             mock_client.get.side_effect = mock_get_with_errors
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Make requests despite high error rate
                 tasks = [
                     call_tool("get_current_weather", {"city": f"ErrorTestCity{i}"})

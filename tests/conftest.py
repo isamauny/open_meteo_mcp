@@ -112,7 +112,7 @@ def mock_datetime():
                 else:
                     return datetime.now(tz)
 
-            patch_obj = patch('src.mcp_weather_server.tools.tools_time.datetime')
+            patch_obj = patch('src.open_meteo_mcp.tools.tools_time.datetime')
             mock_datetime = patch_obj.start()
             mock_datetime.now = mock_now
             self.patches.append(patch_obj)
@@ -153,7 +153,7 @@ def mock_timezone():
                     return self.zone_mapping[name]
                 return ZoneInfo(name)
 
-            patch_obj = patch('src.mcp_weather_server.utils.get_zoneinfo', side_effect=mock_get_zoneinfo)
+            patch_obj = patch('src.open_meteo_mcp.utils.get_zoneinfo', side_effect=mock_get_zoneinfo)
             patch_obj.start()
             self.patches.append(patch_obj)
 
@@ -172,7 +172,7 @@ def mock_timezone():
 @pytest.fixture
 def weather_service():
     """Create a WeatherService instance for testing."""
-    from src.mcp_weather_server.tools.weather_service import WeatherService
+    from src.open_meteo_mcp.tools.weather_service import WeatherService
     return WeatherService()
 
 

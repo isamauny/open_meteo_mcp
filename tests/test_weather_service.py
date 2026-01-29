@@ -5,7 +5,7 @@ Unit tests for WeatherService class.
 import pytest
 import httpx
 from unittest.mock import AsyncMock, Mock, patch
-from src.mcp_weather_server.tools.weather_service import WeatherService
+from src.open_meteo_mcp.tools.weather_service import WeatherService
 
 
 class TestWeatherService:
@@ -99,7 +99,7 @@ class TestWeatherService:
                 mock_client_class.return_value.__aenter__.return_value = mock_client
 
                 # Mock the utility function to return a predictable index
-                with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=1):
+                with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=1):
                     result = await weather_service.get_current_weather("New York")
 
                     assert result["city"] == "New York"
@@ -196,7 +196,7 @@ class TestWeatherService:
         sample_weather_range_data
     ):
         """Test formatting of weather range response."""
-        with patch('src.mcp_weather_server.utils.format_get_weather_bytime') as mock_format:
+        with patch('src.open_meteo_mcp.utils.format_get_weather_bytime') as mock_format:
             mock_format.return_value = "formatted response"
 
             result = weather_service.format_weather_range_response(sample_weather_range_data)

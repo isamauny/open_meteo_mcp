@@ -7,7 +7,7 @@ import pytest
 import platform
 from datetime import datetime
 from zoneinfo import ZoneInfo, available_timezones
-from src.mcp_weather_server.utils import get_zoneinfo
+from src.open_meteo_mcp.utils import get_zoneinfo
 
 
 class TestTimezoneDependency:

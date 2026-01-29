@@ -10,4 +10,4 @@ COPY . /app
 RUN (uv venv .venv) && (. .venv/bin/activate) && (uv pip install -e .)
 
 # Run the server in SSE mode, reading port from PORT environment variable
-CMD ["uv", "run", "python", "-m", "mcp_weather_server", "--mode", "stdio"]
+CMD ["uv", "run", "python", "-m", "open_meteo_mcp", "--mode", "stdio"]

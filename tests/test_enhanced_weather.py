@@ -4,7 +4,7 @@ Tests for enhanced weather service functionality.
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from src.mcp_weather_server.tools.weather_service import WeatherService
+from src.open_meteo_mcp.tools.weather_service import WeatherService
 
 
 @pytest.fixture

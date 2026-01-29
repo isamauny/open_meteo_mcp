@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from unittest.mock import patch, Mock
 from zoneinfo import ZoneInfo
 from mcp import McpError
-from src.mcp_weather_server.utils import (
+from src.open_meteo_mcp.utils import (
     TimeResult,
     get_zoneinfo,
     format_get_weather_bytime,
@@ -231,7 +231,7 @@ class TestGetClosestUtcIndex:
             "2024-01-01T14:00:00Z"
         ]
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -249,7 +249,7 @@ class TestGetClosestUtcIndex:
             "2024-01-01T14:00:00Z"
         ]
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -267,7 +267,7 @@ class TestGetClosestUtcIndex:
             "2024-01-01T14:00:00Z"
         ]
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -279,7 +279,7 @@ class TestGetClosestUtcIndex:
         current_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         hourly_times = ["2024-01-01T15:00:00Z"]
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -291,7 +291,7 @@ class TestGetClosestUtcIndex:
         current_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
         hourly_times = []
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
@@ -309,7 +309,7 @@ class TestGetClosestUtcIndex:
             "2024-01-01T14:00:00Z"
         ]
 
-        with patch('src.mcp_weather_server.utils.datetime') as mock_datetime:
+        with patch('src.open_meteo_mcp.utils.datetime') as mock_datetime:
             mock_datetime.now.return_value = current_time
             mock_datetime.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 

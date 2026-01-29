@@ -9,7 +9,7 @@ import json
 from unittest.mock import AsyncMock, Mock, patch
 from mcp.types import ErrorData
 from mcp import McpError
-from src.mcp_weather_server.server import (
+from src.open_meteo_mcp.server import (
     register_all_tools,
     list_tools,
     call_tool,
@@ -70,7 +70,7 @@ class TestWeatherIntegration:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Test the complete workflow
                 tools = await list_tools()
                 assert any(tool.name == "get_current_weather" for tool in tools)
@@ -181,7 +181,7 @@ class TestWeatherIntegration:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 result = await call_tool("get_weather_details", {"city": "Paris"})
 
                 assert len(result) == 1
@@ -212,9 +212,9 @@ class TestTimeIntegration:
 
         fixed_time = datetime(2024, 6, 15, 10, 30, 45, tzinfo=ZoneInfo("America/New_York"))
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("America/New_York")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
 
                 result = await call_tool("get_current_datetime", {
@@ -235,9 +235,9 @@ class TestTimeIntegration:
         fixed_time = datetime(2024, 12, 25, 15, 0, 0, tzinfo=ZoneInfo("Europe/London"))
         fixed_utc_time = datetime(2024, 12, 25, 15, 0, 0)  # UTC time without timezone
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("Europe/London")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
                 mock_datetime.utcnow.return_value = fixed_utc_time
 
@@ -257,7 +257,7 @@ class TestTimeIntegration:
         from datetime import datetime
         from zoneinfo import ZoneInfo
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.side_effect = lambda tz: ZoneInfo(tz)
 
             with patch('dateutil.parser.parse') as mock_parse:
@@ -342,7 +342,7 @@ class TestErrorHandlingIntegration:
     @pytest.mark.asyncio
     async def test_invalid_timezone_error_handling(self):
         """Test error handling for invalid timezones."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.side_effect = McpError(ErrorData(code=-1, message="Invalid timezone: BadTimezone"))
 
             result = await call_tool("get_current_datetime", {
@@ -467,7 +467,7 @@ class TestConcurrentOperations:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 # Run concurrent requests
                 tasks = [
                     call_tool("get_current_weather", {"city": "New York"}),
@@ -538,11 +538,11 @@ class TestConcurrentOperations:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+            with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
                 mock_get_tz.return_value = ZoneInfo("Asia/Tokyo")
-                with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+                with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                     mock_datetime.now.return_value = fixed_time
-                    with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+                    with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
 
                         # Run concurrent requests to different tools
                         tasks = [

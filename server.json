@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
-  "name": "io.github.isdaniel/mcp_weather_server",
-  "title": "Weather MCP Server",
+  "name": "io.github.isamauny/open_meteo_mcp",
+  "title": "Open Meteo MCP Server",
   "description": "providing weather information, air quality data, and timezone utilities using the Open-Meteo API.",
   "repository": {
-    "url": "https://github.com/isdaniel/mcp_weather_server",
+    "url": "https://github.com/isamauny/open_meteo_mcp",
     "source": "github"
   },
-  "version": "0.6.1",
+  "version": "0.1.0",
   "packages": [
     {
       "registryType": "pypi",
-      "identifier": "mcp-weather-server",
-      "version": "0.6.1",
+      "identifier": "open-meteo-mcp",
+      "version": "0.1.0",
       "transport": {
         "type": "stdio"
       }

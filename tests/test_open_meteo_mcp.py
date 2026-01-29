@@ -21,7 +21,7 @@ async def test_legacy_get_weather_functionality():
     """Legacy test to ensure backward compatibility."""
     # This test ensures that any legacy get_weather function (if it exists) still works
     try:
-        from src.mcp_weather_server.server import get_weather
+        from src.open_meteo_mcp.server import get_weather
 
         # Mock HTTP client for legacy function
         with patch('httpx.AsyncClient') as mock_client_class:
@@ -47,12 +47,12 @@ class TestSmokeTests:
     @pytest.mark.asyncio
     async def test_can_import_all_modules(self):
         """Test that all modules can be imported without errors."""
-        from src.mcp_weather_server import server
-        from src.mcp_weather_server import utils
-        from src.mcp_weather_server.tools import toolhandler
-        from src.mcp_weather_server.tools import weather_service
-        from src.mcp_weather_server.tools import tools_weather
-        from src.mcp_weather_server.tools import tools_time
+        from src.open_meteo_mcp import server
+        from src.open_meteo_mcp import utils
+        from src.open_meteo_mcp.tools import toolhandler
+        from src.open_meteo_mcp.tools import weather_service
+        from src.open_meteo_mcp.tools import tools_weather
+        from src.open_meteo_mcp.tools import tools_time
 
         # Basic assertions to ensure imports worked
         assert hasattr(server, 'register_all_tools')
@@ -63,10 +63,10 @@ class TestSmokeTests:
     @pytest.mark.asyncio
     async def test_server_starts_without_errors(self):
         """Test that server initialization doesn't raise errors."""
-        from src.mcp_weather_server.server import register_all_tools, list_tools
+        from src.open_meteo_mcp.server import register_all_tools, list_tools
 
         # Clear any existing handlers
-        from src.mcp_weather_server.server import tool_handlers
+        from src.open_meteo_mcp.server import tool_handlers
         tool_handlers.clear()
 
         # Register tools and list them

@@ -6,7 +6,7 @@ import pytest
 import json
 from unittest.mock import AsyncMock, Mock, patch
 from mcp.types import TextContent
-from src.mcp_weather_server.tools.tools_weather import (
+from src.open_meteo_mcp.tools.tools_weather import (
     GetCurrentWeatherToolHandler,
     GetWeatherByDateRangeToolHandler,
     GetWeatherDetailsToolHandler
@@ -305,7 +305,7 @@ class TestToolHandlerIntegration:
             mock_client.get.side_effect = mock_get
             mock_client_class.return_value.__aenter__.return_value = mock_client
 
-            with patch('src.mcp_weather_server.utils.get_closest_utc_index', return_value=0):
+            with patch('src.open_meteo_mcp.utils.get_closest_utc_index', return_value=0):
                 result = await handler.run_tool({"city": "London"})
 
                 assert len(result) == 1

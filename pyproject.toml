@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp_weather_server"
-version = "0.6.1"
+name = "open_meteo_mcp"
+version = "0.1.1"
 authors = [
   { name = "danielshih", email = "dog830228@gmail.com" },
 ]
@@ -22,12 +22,12 @@ dependencies = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mcp_weather_server"]
+packages = ["src/open_meteo_mcp"]
 
 [project.scripts]
-mcp_weather_server = "mcp_weather_server:main"
+open_meteo_mcp = "open_meteo_mcp:main"
 
 [project.urls]
-Source = "https://github.com/isdaniel/mcp_weather_server"
+Source = "https://github.com/isamauny/open_meteo_mcp"
 
 

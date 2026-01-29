@@ -4,7 +4,7 @@ Tests for air quality service functionality.
 
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
-from src.mcp_weather_server.tools.air_quality_service import AirQualityService
+from src.open_meteo_mcp.tools.air_quality_service import AirQualityService
 
 
 @pytest.fixture

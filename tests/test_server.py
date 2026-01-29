@@ -4,7 +4,7 @@ Unit tests for server functionality.
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from src.mcp_weather_server.server import (
+from src.open_meteo_mcp.server import (
     add_tool_handler,
     get_tool_handler,
     register_all_tools,
@@ -12,7 +12,7 @@ from src.mcp_weather_server.server import (
     call_tool,
     tool_handlers
 )
-from src.mcp_weather_server.tools.toolhandler import ToolHandler
+from src.open_meteo_mcp.tools.toolhandler import ToolHandler
 from mcp.types import Tool, TextContent
 
 

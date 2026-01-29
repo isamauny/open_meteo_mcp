@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from mcp.types import TextContent, ErrorData
 from mcp import McpError
-from src.mcp_weather_server.tools.tools_time import (
+from src.open_meteo_mcp.tools.tools_time import (
     GetCurrentDateTimeToolHandler,
     GetTimeZoneInfoToolHandler,
     ConvertTimeToolHandler
@@ -39,9 +39,9 @@ class TestGetCurrentDateTimeToolHandler:
         """Test successful tool execution."""
         fixed_time = datetime(2024, 1, 1, 15, 30, 45, tzinfo=ZoneInfo("America/New_York"))
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("America/New_York")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
 
                 args = {"timezone_name": "America/New_York"}
@@ -67,7 +67,7 @@ class TestGetCurrentDateTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_invalid_timezone(self, handler):
         """Test tool execution with invalid timezone."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.side_effect = McpError(ErrorData(code=-1, message="Invalid timezone: Invalid/Timezone"))
 
             args = {"timezone_name": "Invalid/Timezone"}
@@ -82,9 +82,9 @@ class TestGetCurrentDateTimeToolHandler:
         """Test tool execution with UTC timezone."""
         fixed_time = datetime(2024, 1, 1, 12, 0, 0, tzinfo=ZoneInfo("UTC"))
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("UTC")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
 
                 args = {"timezone_name": "UTC"}
@@ -187,9 +187,9 @@ class TestGetTimeZoneInfoToolHandler:
         fixed_time = datetime(2024, 6, 15, 14, 30, 0, tzinfo=ZoneInfo("Europe/London"))
         fixed_utc_time = datetime(2024, 6, 15, 13, 0, 0)  # UTC time without timezone
 
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("Europe/London")
-            with patch('src.mcp_weather_server.tools.tools_time.datetime') as mock_datetime:
+            with patch('src.open_meteo_mcp.tools.tools_time.datetime') as mock_datetime:
                 mock_datetime.now.return_value = fixed_time
                 mock_datetime.utcnow.return_value = fixed_utc_time
 
@@ -217,7 +217,7 @@ class TestGetTimeZoneInfoToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_invalid_timezone(self, handler):
         """Test tool execution with invalid timezone."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.side_effect = McpError(ErrorData(code=-1, message="Invalid timezone"))
 
             args = {"timezone_name": "Invalid/Timezone"}
@@ -255,7 +255,7 @@ class TestConvertTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_success(self, handler):
         """Test successful time conversion."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             # Mock timezone creation
             mock_get_tz.side_effect = lambda tz: ZoneInfo(tz)
 
@@ -311,7 +311,7 @@ class TestConvertTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_invalid_from_timezone(self, handler):
         """Test tool execution with invalid from_timezone."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             def side_effect(tz):
                 if tz == "Invalid/Timezone":
                     raise McpError(ErrorData(code=-1, message="Invalid timezone"))
@@ -332,7 +332,7 @@ class TestConvertTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_invalid_to_timezone(self, handler):
         """Test tool execution with invalid to_timezone."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             def side_effect(tz):
                 if tz == "Invalid/Timezone":
                     raise McpError(ErrorData(code=-1, message="Invalid timezone"))
@@ -356,7 +356,7 @@ class TestConvertTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_same_timezone_conversion(self, handler):
         """Test time conversion between same timezones."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.return_value = ZoneInfo("UTC")
 
             with patch('dateutil.parser.parse') as mock_parse:
@@ -380,7 +380,7 @@ class TestConvertTimeToolHandler:
     @pytest.mark.asyncio
     async def test_run_tool_across_date_line(self, handler):
         """Test time conversion across international date line."""
-        with patch('src.mcp_weather_server.utils.get_zoneinfo') as mock_get_tz:
+        with patch('src.open_meteo_mcp.utils.get_zoneinfo') as mock_get_tz:
             mock_get_tz.side_effect = lambda tz: ZoneInfo(tz)
 
             with patch('dateutil.parser.parse') as mock_parse:
