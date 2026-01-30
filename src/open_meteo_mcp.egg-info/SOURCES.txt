@@ -11,6 +11,9 @@ src/open_meteo_mcp.egg-info/dependency_links.txt
 src/open_meteo_mcp.egg-info/entry_points.txt
 src/open_meteo_mcp.egg-info/requires.txt
 src/open_meteo_mcp.egg-info/top_level.txt
+src/open_meteo_mcp/auth/__init__.py
+src/open_meteo_mcp/auth/middleware.py
+src/open_meteo_mcp/auth/wso2_validator.py
 src/open_meteo_mcp/tools/__init__.py
 src/open_meteo_mcp/tools/air_quality_service.py
 src/open_meteo_mcp/tools/toolhandler.py

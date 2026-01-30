@@ -21,6 +21,11 @@ dependencies = [
   "tzdata>=2025.2",
 ]
 
+[project.optional-dependencies]
+auth = [
+  "python-jose[cryptography]>=3.3.0",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/open_meteo_mcp"]
 

@@ -14,6 +14,8 @@ Requires-Dist: python-dateutil>=2.8.2
 Requires-Dist: starlette>=0.27.0
 Requires-Dist: uvicorn>=0.20.0
 Requires-Dist: tzdata>=2025.2
+Provides-Extra: auth
+Requires-Dist: python-jose[cryptography]>=3.3.0; extra == "auth"
 Dynamic: license-file
 
 [![smithery badge](https://smithery.ai/badge/@isamauny/open_meteo_mcp)](https://smithery.ai/server/@isamauny/open_meteo_mcp)
