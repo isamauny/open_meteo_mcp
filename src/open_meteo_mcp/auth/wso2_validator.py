@@ -37,6 +37,7 @@ class WSO2TokenValidator:
         audience: Optional[str] = None,
         jwks_cache_ttl: int = 3600,
         validate_issuer: bool = True,
+        verify_ssl: bool = True,
     ):
         """
         Initialize the WSO2 token validator.
@@ -46,11 +47,13 @@ class WSO2TokenValidator:
             audience: Expected audience claim (client_id). If None, audience is not validated.
             jwks_cache_ttl: Time-to-live for JWKS cache in seconds (default: 1 hour)
             validate_issuer: Whether to validate the issuer claim (default: True)
+            verify_ssl: Whether to verify SSL certificates (default: True, set False only for local dev)
         """
         self.issuer_url = issuer_url + '/oauth2/token'
         self.audience = audience
         self.jwks_cache_ttl = jwks_cache_ttl
         self.validate_issuer = validate_issuer
+        self.verify_ssl = verify_ssl
 
         # JWKS endpoint - handle both WSO2 IS and Asgardeo formats
         if "/oauth2" in self.issuer_url:
@@ -65,8 +68,10 @@ class WSO2TokenValidator:
         self._jwks: Optional[Dict[str, Any]] = None
         self._jwks_fetched_at: float = 0
 
-        logger.info(f"WSO2TokenValidator initialized (issuer validation: {validate_issuer})")
+        logger.info(f"WSO2TokenValidator initialized (issuer validation: {validate_issuer}, SSL verify: {verify_ssl})")
         logger.info(f"JWKS URL: {self.jwks_url}")
+        if not verify_ssl:
+            logger.warning("SSL verification is DISABLED - this should only be used in development!")
 
     async def _fetch_jwks(self) -> Dict[str, Any]:
         """
@@ -79,7 +84,7 @@ class WSO2TokenValidator:
             TokenValidationError: If JWKS fetch fails
         """
         try:
-            async with httpx.AsyncClient(verify=False) as client:  # verify=False for dev; use True in production
+            async with httpx.AsyncClient(verify=self.verify_ssl) as client:
                 response = await client.get(self.jwks_url, timeout=10.0)
                 response.raise_for_status()
                 jwks = response.json()
@@ -128,7 +133,9 @@ class WSO2TokenValidator:
             # Get JWKS
             jwks = await self._get_jwks()
 
-            logger.debug ("Token:" + token)
+            # Print Token (TO BE REMOVED)
+            logger.info ("Token: " + token)
+            
             # Get the unverified header to find the key ID
             unverified_header = jwt.get_unverified_header(token)
             kid = unverified_header.get("kid")

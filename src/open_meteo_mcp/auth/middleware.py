@@ -13,6 +13,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from .wso2_validator import WSO2TokenValidator, TokenValidationError
+from .request_context import set_request_user, clear_request_user
 
 logger = logging.getLogger("mcp-weather.auth")
 
@@ -115,10 +116,17 @@ class WSO2AuthMiddleware(BaseHTTPMiddleware):
             request.state.user = claims
             request.state.access_token = token
 
+            # Set claims in context variable for tool handlers to access
+            set_request_user(claims)
+
             logger.debug(f"Authenticated request from user: {claims.get('sub')}")
 
-            # Proceed to the next handler
-            return await call_next(request)
+            try:
+                # Proceed to the next handler
+                return await call_next(request)
+            finally:
+                # Clear context after request completes
+                clear_request_user()
 
         except TokenValidationError as e:
             logger.warning(f"Token validation failed: {e}")

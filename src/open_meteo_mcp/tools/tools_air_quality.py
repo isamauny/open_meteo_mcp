@@ -1,6 +1,8 @@
 """
 Air Quality tool handlers for the MCP weather server.
 This module contains air quality-specific tool implementations.
+
+Note: Air quality tools require the 'read_airquality' OAuth2 scope.
 """
 
 import json
@@ -12,6 +14,25 @@ from .air_quality_service import AirQualityService
 from .weather_service import WeatherService
 
 logger = logging.getLogger("mcp-weather")
+
+# Required OAuth2 scope for air quality tools
+AIRQUALITY_SCOPE = "read_airquality"
+
+
+def check_airquality_scope() -> None:
+    """
+    Check if the current request has the required air quality scope.
+
+    Raises:
+        PermissionError: If the scope is not present
+    """
+    try:
+        from ..auth import require_scope
+        require_scope(AIRQUALITY_SCOPE)
+    except ImportError:
+        # Auth module not installed, skip scope check
+        logger.debug("Auth module not available, skipping scope check")
+        pass
 
 
 class GetAirQualityToolHandler(ToolHandler):
@@ -67,8 +88,13 @@ class GetAirQualityToolHandler(ToolHandler):
     async def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
         """
         Execute the air quality tool.
+
+        Requires the 'read_airquality' OAuth2 scope.
         """
         try:
+            # Check for required scope
+            check_airquality_scope()
+
             self.validate_required_args(args, ["city"])
 
             city = args["city"]
@@ -110,6 +136,14 @@ class GetAirQualityToolHandler(ToolHandler):
                 )
             ]
 
+        except PermissionError as e:
+            logger.warning(f"Permission denied for air quality: {str(e)}")
+            return [
+                TextContent(
+                    type="text",
+                    text=f"Access denied: {str(e)}"
+                )
+            ]
         except ValueError as e:
             logger.error(f"Air quality service error: {str(e)}")
             return [
@@ -180,8 +214,13 @@ class GetAirQualityDetailsToolHandler(ToolHandler):
     async def run_tool(self, args: dict) -> Sequence[TextContent | ImageContent | EmbeddedResource]:
         """
         Execute the detailed air quality tool.
+
+        Requires the 'read_airquality' OAuth2 scope.
         """
         try:
+            # Check for required scope
+            check_airquality_scope()
+
             self.validate_required_args(args, ["city"])
 
             city = args["city"]
@@ -219,6 +258,14 @@ class GetAirQualityDetailsToolHandler(ToolHandler):
                 )
             ]
 
+        except PermissionError as e:
+            logger.warning(f"Permission denied for air quality details: {str(e)}")
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps({"error": "permission_denied", "message": str(e)}, indent=2)
+                )
+            ]
         except ValueError as e:
             logger.error(f"Air quality service error: {str(e)}")
             return [

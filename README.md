@@ -211,9 +211,179 @@ async function callWeatherTool() {
 }
 ```
 
+## Security & Authentication
+
+### Un-secured Mode (Default)
+
+By default, the MCP server runs **without authentication** - all endpoints are publicly accessible. This is suitable for:
+- Local development and testing
+- Desktop MCP clients (Claude Desktop, Cline) via stdio mode
+- Internal network deployments
+- Applications that handle authentication at a different layer
+
+**Running in un-secured mode:**
+
+```bash
+# stdio mode (default - no authentication available)
+python -m open_meteo_mcp
+
+# SSE mode (no authentication)
+python -m open_meteo_mcp --mode sse
+
+# Streamable HTTP mode (no authentication)
+python -m open_meteo_mcp --mode streamable-http
+```
+
+No additional configuration is required. The server will log: `"Authentication disabled - server is open"`
+
+### Secured Mode (WSO2 IS Authentication)
+
+For production deployments or when you need to secure your MCP server endpoints, you can enable **JWT token authentication** using WSO2 Identity Server.
+
+**Important:** Authentication is only available in `streamable-http` mode.
+
+#### Requirements
+
+1. Install authentication dependencies:
+   ```bash
+   pip install open_meteo_mcp[auth]
+   # or manually:
+   pip install pyjwt cryptography
+   ```
+
+2. Set up WSO2 Identity Server (or compatible OAuth2/OIDC provider)
+3. Configure environment variables (see below)
+
+#### Configuration
+
+Enable authentication by setting the following environment variables:
+
+**Required:**
+- `AUTH_ENABLED=true` - Enables authentication
+- `WSO2_IS_URL` - Your WSO2 IS base URL (e.g., `https://your-wso2-is.com`)
+
+**Optional:**
+- `WSO2_IS_AUDIENCE` - Expected audience claim / client_id for token validation
+- `WSO2_VERIFY_SSL` - Set to `false` to disable SSL verification (local dev only, default: `true`)
+
+#### Running in Secured Mode
+
+**Using environment variables:**
+
+```bash
+# Set environment variables
+export AUTH_ENABLED=true
+export WSO2_IS_URL="https://your-wso2-is.com"
+export WSO2_IS_AUDIENCE="your-client-id"
+
+# Start the server in streamable-http mode
+python -m open_meteo_mcp --mode streamable-http --host 0.0.0.0 --port 8080
+```
+
+**Using Docker:**
+
+```bash
+docker run -p 8080:8080 \
+  -e AUTH_ENABLED=true \
+  -e WSO2_IS_URL="https://your-wso2-is.com" \
+  -e WSO2_IS_AUDIENCE="your-client-id" \
+  dog830228/mcp_weather_server:latest \
+  --mode streamable-http
+```
+
+**For local development with self-signed certificates:**
+
+```bash
+export AUTH_ENABLED=true
+export WSO2_IS_URL="https://localhost:9443"
+export WSO2_VERIFY_SSL=false
+export WSO2_IS_AUDIENCE="your-client-id"
+
+python -m open_meteo_mcp --mode streamable-http --debug
+```
+
+#### Making Authenticated Requests
+
+When authentication is enabled, all requests to the `/mcp` endpoint must include a valid JWT Bearer token:
+
+```javascript
+// Get access token from your OAuth2 provider (e.g., client credentials flow)
+const accessToken = "your-jwt-access-token";
+
+// Make authenticated request
+const response = await fetch('http://localhost:8080/mcp', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${accessToken}`
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    method: 'tools/call',
+    params: {
+      name: 'get_current_weather',
+      arguments: { city: 'Tokyo' }
+    },
+    id: 1
+  })
+});
+```
+
+**Using curl:**
+
+```bash
+# Get access token (example using client credentials)
+TOKEN=$(curl -X POST "https://your-wso2-is.com/oauth2/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials" \
+  -d "client_id=YOUR_CLIENT_ID" \
+  -d "client_secret=YOUR_CLIENT_SECRET" \
+  | jq -r '.access_token')
+
+# Make authenticated request
+curl -X POST "http://localhost:8080/mcp" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "get_current_weather",
+      "arguments": {"city": "Tokyo"}
+    },
+    "id": 1
+  }'
+```
+
+#### Authentication Response Codes
+
+- **401 Unauthorized** - Missing, invalid, or expired token
+  ```json
+  {
+    "error": "unauthorized",
+    "message": "Missing Authorization header"
+  }
+  ```
+
+- **200 OK** - Valid token, request processed successfully
+
+#### Excluded Endpoints
+
+The following endpoints are excluded from authentication (when configured):
+- `/health` - Health check endpoint (if implemented)
+- `OPTIONS` requests (CORS preflight)
+
+### Authentication Feature Summary
+
+| Mode | Authentication Support | Use Case |
+|------|------------------------|----------|
+| `stdio` | Not available | Desktop MCP clients (always un-secured) |
+| `sse` | Not available | Web applications (always un-secured) |
+| `streamable-http` | Optional (WSO2 IS) | Production web/API deployments |
+
 ## Configuration
 
-This server does not require an API key. It uses the Open-Meteo API, which is free and open-source.
+This server does not require an API key for the weather data. It uses the Open-Meteo API, which is free and open-source.
 
 ## Usage
 
@@ -523,6 +693,8 @@ The project is available as a Docker image on Docker Hub and includes configurat
 
 Pull and run the latest image directly from Docker Hub:
 
+#### Un-secured Mode (Default)
+
 ```bash
 # Pull the latest image
 docker pull dog830228/mcp_weather_server:latest
@@ -530,15 +702,52 @@ docker pull dog830228/mcp_weather_server:latest
 # Run in stdio mode (default)
 docker run dog830228/mcp_weather_server:latest
 
-# Run in SSE mode on port 8080
+# Run in SSE mode on port 8080 (un-secured)
 docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode sse
 
-# Run in streamable-http mode on port 8080
+# Run in streamable-http mode on port 8080 (un-secured)
 docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode streamable-http
 
 # Pull a specific version
 docker pull dog830228/mcp_weather_server:0.5.0
 docker run -p 8080:8080 dog830228/mcp_weather_server:0.5.0 --mode sse
+```
+
+#### Secured Mode (WSO2 IS Authentication)
+
+```bash
+# Run in streamable-http mode with WSO2 IS authentication
+docker run -p 8080:8080 \
+  -e AUTH_ENABLED=true \
+  -e WSO2_IS_URL="https://your-wso2-is.com" \
+  -e WSO2_IS_AUDIENCE="your-client-id" \
+  dog830228/mcp_weather_server:latest \
+  --mode streamable-http
+
+# Run with authentication and debug logging
+docker run -p 8080:8080 \
+  -e AUTH_ENABLED=true \
+  -e WSO2_IS_URL="https://your-wso2-is.com" \
+  -e WSO2_IS_AUDIENCE="your-client-id" \
+  dog830228/mcp_weather_server:latest \
+  --mode streamable-http --debug
+
+# Run with authentication in stateless mode
+docker run -p 8080:8080 \
+  -e AUTH_ENABLED=true \
+  -e WSO2_IS_URL="https://your-wso2-is.com" \
+  -e WSO2_IS_AUDIENCE="your-client-id" \
+  dog830228/mcp_weather_server:latest \
+  --mode streamable-http --stateless
+
+# For local development with self-signed certificates
+docker run -p 8080:8080 \
+  -e AUTH_ENABLED=true \
+  -e WSO2_IS_URL="https://localhost:9443" \
+  -e WSO2_VERIFY_SSL=false \
+  -e WSO2_IS_AUDIENCE="your-client-id" \
+  dog830228/mcp_weather_server:latest \
+  --mode streamable-http --debug
 ```
 
 ### Available Docker Images
@@ -706,13 +915,46 @@ This server uses free and open-source APIs:
 - Ensure start_date is before end_date
 - Check that dates are not too far in the future
 
+**5. Authentication errors (Secured Mode)**
+- **401 Unauthorized - Missing Authorization header**
+  - Ensure you're including the `Authorization: Bearer <token>` header in your requests
+  - Verify the token is properly formatted (no extra spaces)
+
+- **401 Unauthorized - Token validation failed**
+  - Check that your JWT token is not expired
+  - Verify the token was issued by the correct WSO2 IS instance (check `iss` claim)
+  - Ensure the audience claim matches your `WSO2_IS_AUDIENCE` configuration
+  - Verify the token signature is valid
+
+- **Failed to import auth module**
+  - Install authentication dependencies: `pip install open_meteo_mcp[auth]`
+  - Or manually: `pip install pyjwt cryptography`
+
+- **WSO2_IS_URL environment variable is required**
+  - Set `WSO2_IS_URL` when `AUTH_ENABLED=true`
+  - Example: `export WSO2_IS_URL="https://your-wso2-is.com"`
+
+- **SSL certificate verification errors**
+  - For production: Use valid SSL certificates
+  - For local development only: Set `WSO2_VERIFY_SSL=false`
+  - Never disable SSL verification in production
+
 ### Error Responses
 
 The server returns structured error messages:
 
+**Weather/API errors:**
 ```json
 {
   "error": "Could not retrieve coordinates for InvalidCity."
+}
+```
+
+**Authentication errors (Secured Mode):**
+```json
+{
+  "error": "unauthorized",
+  "message": "Missing Authorization header"
 }
 ```
 

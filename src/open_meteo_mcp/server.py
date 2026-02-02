@@ -209,9 +209,13 @@ def create_streamable_http_app(
         try:
             from .auth import WSO2TokenValidator, WSO2AuthMiddleware
 
+            # SSL verification can be disabled for local development only
+            verify_ssl = os.environ.get("WSO2_VERIFY_SSL", "true").lower() != "false"
+
             validator = WSO2TokenValidator(
                 issuer_url=wso2_issuer_url,
                 audience=wso2_audience,
+                verify_ssl=verify_ssl,
             )
             starlette_app.add_middleware(
                 WSO2AuthMiddleware,

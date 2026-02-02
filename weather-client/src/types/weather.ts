@@ -4,30 +4,26 @@
 
 export interface WeatherData {
   city: string;
-  country: string;
   latitude: number;
   longitude: number;
-  timezone: string;
-  current: CurrentWeather;
-  forecast?: HourlyForecast[];
-}
-
-export interface CurrentWeather {
   time: string;
-  temperature: number;
-  feels_like: number;
-  humidity: number;
-  dew_point: number;
-  wind_speed: number;
-  wind_direction: number;
-  wind_gusts: number;
-  precipitation: number;
-  pressure: number;
-  cloud_cover: number;
-  uv_index: number;
-  visibility: number;
+  temperature_c: number;
+  apparent_temperature_c: number;
+  relative_humidity_percent: number;
+  dew_point_c: number;
   weather_code: number;
   weather_description: string;
+  wind_speed_kmh: number;
+  wind_direction_degrees: number;
+  wind_gusts_kmh: number;
+  precipitation_mm: number;
+  rain_mm: number;
+  snowfall_cm: number;
+  precipitation_probability_percent: number;
+  pressure_hpa: number;
+  cloud_cover_percent: number;
+  uv_index: number;
+  visibility_m: number;
 }
 
 export interface HourlyForecast {
@@ -42,8 +38,8 @@ export interface AirQualityData {
   city: string;
   latitude: number;
   longitude: number;
-  timezone: string;
-  current: CurrentAirQuality;
+  current_air_quality: CurrentAirQuality;
+  full_data?: unknown;
 }
 
 export interface CurrentAirQuality {

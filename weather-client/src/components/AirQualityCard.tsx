@@ -1,75 +1,32 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import type { AirQualityData } from '../types/weather';
 
 interface AirQualityCardProps {
-  airQualityText: string;
+  airQualityData?: AirQualityData | null;
   isLoading: boolean;
   error?: Error | null;
 }
 
-interface ParsedAirQuality {
-  location?: string;
-  overallStatus?: string;
-  pm25?: string;
-  pm10?: string;
-  ozone?: string;
-  no2?: string;
-  co?: string;
-  so2?: string;
-  healthAdvice?: string[];
-  rawLines: string[];
-}
-
 type QualityLevel = 'good' | 'moderate' | 'unhealthy-sensitive' | 'unhealthy' | 'very-unhealthy' | 'hazardous' | 'unknown';
 
-function parseAirQualityText(text: string): ParsedAirQuality {
-  const lines = text.split('\n').filter(line => line.trim());
-  const result: ParsedAirQuality = { rawLines: [], healthAdvice: [] };
-
-  for (const line of lines) {
-    const lowerLine = line.toLowerCase();
-
-    if (lowerLine.includes('pm2.5') || lowerLine.includes('pm2_5')) {
-      result.pm25 = extractValue(line);
-    } else if (lowerLine.includes('pm10')) {
-      result.pm10 = extractValue(line);
-    } else if (lowerLine.includes('ozone') || lowerLine.match(/\bo3\b/)) {
-      result.ozone = extractValue(line);
-    } else if (lowerLine.includes('nitrogen') || lowerLine.match(/\bno2\b/)) {
-      result.no2 = extractValue(line);
-    } else if (lowerLine.includes('carbon monoxide') || lowerLine.match(/\bco\b/)) {
-      result.co = extractValue(line);
-    } else if (lowerLine.includes('sulphur') || lowerLine.includes('sulfur') || lowerLine.match(/\bso2\b/)) {
-      result.so2 = extractValue(line);
-    } else if (lowerLine.includes('status') || lowerLine.includes('level') || lowerLine.includes('category')) {
-      result.overallStatus = extractValue(line);
-    } else if (lowerLine.includes('advice') || lowerLine.includes('recommend') || lowerLine.includes('health')) {
-      result.healthAdvice?.push(line.replace(/^[-•*]\s*/, ''));
-    } else if (line.startsWith('#')) {
-      result.location = line.replace(/^#+\s*/, '');
-    } else {
-      result.rawLines.push(line);
-    }
-  }
-
-  return result;
+function getQualityLevelFromPM25(pm25?: number): QualityLevel {
+  if (pm25 === undefined) return 'unknown';
+  if (pm25 <= 12) return 'good';
+  if (pm25 <= 35) return 'moderate';
+  if (pm25 <= 55) return 'unhealthy-sensitive';
+  if (pm25 <= 150) return 'unhealthy';
+  if (pm25 <= 250) return 'very-unhealthy';
+  return 'hazardous';
 }
 
-function extractValue(line: string): string {
-  if (line.includes(':')) {
-    return line.split(':').slice(1).join(':').trim();
-  }
-  return line.replace(/^[-•*]\s*/, '').trim();
-}
-
-function getQualityLevel(text: string): QualityLevel {
-  const lower = text.toLowerCase();
-  if (lower.includes('hazardous')) return 'hazardous';
-  if (lower.includes('very unhealthy')) return 'very-unhealthy';
-  if (lower.includes('unhealthy for sensitive') || lower.includes('sensitive groups')) return 'unhealthy-sensitive';
-  if (lower.includes('unhealthy')) return 'unhealthy';
-  if (lower.includes('moderate')) return 'moderate';
-  if (lower.includes('good')) return 'good';
-  return 'unknown';
+function getHealthAdvice(pm25?: number): string {
+  if (pm25 === undefined) return 'Air quality data unavailable.';
+  if (pm25 <= 12) return 'Air quality is good. Safe for outdoor activities.';
+  if (pm25 <= 35) return 'Air quality is acceptable. Sensitive individuals should consider reducing prolonged outdoor exertion.';
+  if (pm25 <= 55) return 'Sensitive groups should limit outdoor activities.';
+  if (pm25 <= 150) return 'Everyone should reduce outdoor activities. Sensitive groups should avoid outdoor activities.';
+  if (pm25 <= 250) return 'Everyone should avoid outdoor activities. Sensitive groups should remain indoors.';
+  return 'Health alert: Everyone should avoid all outdoor activities and remain indoors.';
 }
 
 function getQualityStyles(level: QualityLevel) {
@@ -91,21 +48,18 @@ function getQualityStyles(level: QualityLevel) {
   }
 }
 
-function PollutantMetric({ label, value, unit }: { label: string; value?: string; unit?: string }) {
-  if (!value) return null;
+function PollutantMetric({ label, value, unit = '' }: { label: string; value?: number; unit?: string }) {
+  if (value === undefined) return null;
   return (
     <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
       <span className="text-gray-600">{label}</span>
-      <span className="font-medium text-gray-800">{value} {unit}</span>
+      <span className="font-medium text-gray-800">{value.toFixed(1)} {unit}</span>
     </div>
   );
 }
 
-export function AirQualityCard({ airQualityText, isLoading, error }: AirQualityCardProps) {
+export function AirQualityCard({ airQualityData, isLoading, error }: AirQualityCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const parsed = useMemo(() => parseAirQualityText(airQualityText || ''), [airQualityText]);
-  const qualityLevel = useMemo(() => getQualityLevel(airQualityText || ''), [airQualityText]);
-  const styles = getQualityStyles(qualityLevel);
 
   if (isLoading) {
     return (
@@ -129,9 +83,14 @@ export function AirQualityCard({ airQualityText, isLoading, error }: AirQualityC
     );
   }
 
-  if (!airQualityText) {
+  if (!airQualityData) {
     return null;
   }
+
+  const aq = airQualityData.current_air_quality;
+  const qualityLevel = getQualityLevelFromPM25(aq.pm2_5);
+  const styles = getQualityStyles(qualityLevel);
+  const healthAdvice = getHealthAdvice(aq.pm2_5);
 
   return (
     <div className={`rounded-xl shadow-lg overflow-hidden border-l-4 ${styles.border} ${styles.bg}`}>
@@ -149,10 +108,10 @@ export function AirQualityCard({ airQualityText, isLoading, error }: AirQualityC
 
         {/* Key pollutants summary */}
         <div className="grid grid-cols-2 gap-2 mb-4">
-          <PollutantMetric label="PM2.5" value={parsed.pm25} />
-          <PollutantMetric label="PM10" value={parsed.pm10} />
-          <PollutantMetric label="Ozone (O₃)" value={parsed.ozone} />
-          <PollutantMetric label="NO₂" value={parsed.no2} />
+          <PollutantMetric label="PM2.5" value={aq.pm2_5} unit="μg/m³" />
+          <PollutantMetric label="PM10" value={aq.pm10} unit="μg/m³" />
+          <PollutantMetric label="Ozone (O₃)" value={aq.ozone} unit="μg/m³" />
+          <PollutantMetric label="NO₂" value={aq.nitrogen_dioxide} unit="μg/m³" />
         </div>
 
         {/* Expand/collapse button */}
@@ -171,40 +130,21 @@ export function AirQualityCard({ airQualityText, isLoading, error }: AirQualityC
       {isExpanded && (
         <div className="px-6 pb-6 border-t border-gray-200 pt-4">
           {/* Additional pollutants */}
-          {(parsed.co || parsed.so2) && (
+          {(aq.carbon_monoxide !== undefined || aq.sulphur_dioxide !== undefined) && (
             <div className="mb-4">
               <h4 className="font-semibold text-gray-700 mb-2">Additional Pollutants</h4>
-              <PollutantMetric label="Carbon Monoxide (CO)" value={parsed.co} />
-              <PollutantMetric label="Sulphur Dioxide (SO₂)" value={parsed.so2} />
+              <PollutantMetric label="Carbon Monoxide (CO)" value={aq.carbon_monoxide} unit="μg/m³" />
+              <PollutantMetric label="Sulphur Dioxide (SO₂)" value={aq.sulphur_dioxide} unit="μg/m³" />
+              <PollutantMetric label="Ammonia (NH₃)" value={aq.ammonia} unit="μg/m³" />
+              <PollutantMetric label="Dust" value={aq.dust} unit="μg/m³" />
             </div>
           )}
 
           {/* Health advice */}
-          {parsed.healthAdvice && parsed.healthAdvice.length > 0 && (
-            <div className="mb-4">
-              <h4 className="font-semibold text-gray-700 mb-2">Health Advice</h4>
-              <ul className="space-y-1">
-                {parsed.healthAdvice.map((advice, i) => (
-                  <li key={i} className="text-gray-600 text-sm flex items-start gap-2">
-                    <span className="text-blue-500">•</span>
-                    {advice}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Raw data */}
-          {parsed.rawLines.length > 0 && (
-            <details className="mt-4">
-              <summary className="cursor-pointer text-gray-500 text-sm hover:text-gray-700">
-                View raw data ({parsed.rawLines.length} lines)
-              </summary>
-              <pre className="mt-2 p-3 bg-gray-100 rounded text-xs overflow-x-auto max-h-48 overflow-y-auto">
-                {parsed.rawLines.join('\n')}
-              </pre>
-            </details>
-          )}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Health Advice</h4>
+            <p className="text-gray-600 text-sm">{healthAdvice}</p>
+          </div>
         </div>
       )}
     </div>

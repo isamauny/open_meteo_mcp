@@ -1,66 +1,15 @@
-import { useMemo } from 'react';
+import type { WeatherData } from '../types/weather';
 
 interface WeatherCardProps {
-  weatherText: string;
+  weatherData?: WeatherData | null;
   isLoading: boolean;
   error?: Error | null;
 }
 
-interface ParsedWeather {
-  location?: string;
-  temperature?: string;
-  feelsLike?: string;
-  conditions?: string;
-  humidity?: string;
-  wind?: string;
-  pressure?: string;
-  visibility?: string;
-  uvIndex?: string;
-  cloudCover?: string;
-  rawLines: string[];
-}
-
-function parseWeatherText(text: string): ParsedWeather {
-  const lines = text.split('\n').filter(line => line.trim());
-  const result: ParsedWeather = { rawLines: [] };
-
-  for (const line of lines) {
-    const lowerLine = line.toLowerCase();
-
-    // Extract key metrics
-    if (lowerLine.includes('temperature') && !lowerLine.includes('feels')) {
-      result.temperature = extractValue(line);
-    } else if (lowerLine.includes('feels like') || lowerLine.includes('apparent')) {
-      result.feelsLike = extractValue(line);
-    } else if (lowerLine.includes('condition') || lowerLine.includes('weather:')) {
-      result.conditions = extractValue(line);
-    } else if (lowerLine.includes('humidity')) {
-      result.humidity = extractValue(line);
-    } else if (lowerLine.includes('wind') && !lowerLine.includes('gust')) {
-      result.wind = extractValue(line);
-    } else if (lowerLine.includes('pressure')) {
-      result.pressure = extractValue(line);
-    } else if (lowerLine.includes('visibility')) {
-      result.visibility = extractValue(line);
-    } else if (lowerLine.includes('uv')) {
-      result.uvIndex = extractValue(line);
-    } else if (lowerLine.includes('cloud')) {
-      result.cloudCover = extractValue(line);
-    } else if (line.startsWith('#') || line.includes('Weather for')) {
-      result.location = line.replace(/^#+\s*/, '').replace('Weather for ', '').replace('Current Weather in ', '');
-    } else {
-      result.rawLines.push(line);
-    }
-  }
-
-  return result;
-}
-
-function extractValue(line: string): string {
-  if (line.includes(':')) {
-    return line.split(':').slice(1).join(':').trim();
-  }
-  return line.replace(/^[-•*]\s*/, '').trim();
+function degreesToCompass(degrees: number): string {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
 }
 
 function WeatherMetric({ label, value, icon }: { label: string; value?: string; icon: string }) {
@@ -76,9 +25,7 @@ function WeatherMetric({ label, value, icon }: { label: string; value?: string; 
   );
 }
 
-export function WeatherCard({ weatherText, isLoading, error }: WeatherCardProps) {
-  const parsed = useMemo(() => parseWeatherText(weatherText || ''), [weatherText]);
-
+export function WeatherCard({ weatherData, isLoading, error }: WeatherCardProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-6 animate-pulse">
@@ -101,9 +48,11 @@ export function WeatherCard({ weatherText, isLoading, error }: WeatherCardProps)
     );
   }
 
-  if (!weatherText) {
+  if (!weatherData) {
     return null;
   }
+
+  const windDirection = degreesToCompass(weatherData.wind_direction_degrees);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -111,38 +60,32 @@ export function WeatherCard({ weatherText, isLoading, error }: WeatherCardProps)
         <span className="text-4xl">🌤️</span>
         <div>
           <h3 className="text-xl font-bold text-gray-800">
-            {parsed.location || 'Current Weather'}
+            {weatherData.city}
           </h3>
-          {parsed.conditions && (
-            <p className="text-gray-600">{parsed.conditions}</p>
-          )}
+          <p className="text-gray-600">{weatherData.weather_description}</p>
         </div>
       </div>
 
       {/* Temperature display */}
-      {parsed.temperature && (
-        <div className="flex items-center justify-between mb-4 py-2 px-3 bg-blue-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm">Temp:</span>
-            <span className="font-semibold text-gray-800">{parsed.temperature}</span>
-          </div>
-          {parsed.feelsLike && (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-500 text-sm">Feels like:</span>
-              <span className="font-medium text-gray-700">{parsed.feelsLike}</span>
-            </div>
-          )}
+      <div className="flex items-center justify-between mb-4 py-2 px-3 bg-blue-50 rounded-lg">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500 text-sm">Temp:</span>
+          <span className="font-semibold text-gray-800">{weatherData.temperature_c}°C</span>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500 text-sm">Feels like:</span>
+          <span className="font-medium text-gray-700">{weatherData.apparent_temperature_c}°C</span>
+        </div>
+      </div>
 
       {/* Metrics grid */}
       <div className="grid grid-cols-2 gap-3">
-        <WeatherMetric label="Humidity" value={parsed.humidity} icon="💧" />
-        <WeatherMetric label="Wind" value={parsed.wind} icon="💨" />
-        <WeatherMetric label="Pressure" value={parsed.pressure} icon="🌡️" />
-        <WeatherMetric label="Visibility" value={parsed.visibility} icon="👁️" />
-        <WeatherMetric label="UV Index" value={parsed.uvIndex} icon="☀️" />
-        <WeatherMetric label="Cloud Cover" value={parsed.cloudCover} icon="☁️" />
+        <WeatherMetric label="Humidity" value={`${weatherData.relative_humidity_percent}%`} icon="💧" />
+        <WeatherMetric label="Wind" value={`${weatherData.wind_speed_kmh} km/h ${windDirection}`} icon="💨" />
+        <WeatherMetric label="Pressure" value={`${weatherData.pressure_hpa} hPa`} icon="🌡️" />
+        <WeatherMetric label="Visibility" value={`${(weatherData.visibility_m / 1000).toFixed(1)} km`} icon="👁️" />
+        <WeatherMetric label="UV Index" value={weatherData.uv_index.toFixed(1)} icon="☀️" />
+        <WeatherMetric label="Cloud Cover" value={`${weatherData.cloud_cover_percent}%`} icon="☁️" />
       </div>
     </div>
   );

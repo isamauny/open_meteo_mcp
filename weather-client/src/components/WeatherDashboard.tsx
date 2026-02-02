@@ -27,12 +27,12 @@ export function WeatherDashboard() {
       {searchCity && (
         <div className="grid md:grid-cols-2 gap-6">
           <WeatherCard
-            weatherText={weatherQuery.data || ''}
+            weatherData={weatherQuery.data}
             isLoading={weatherQuery.isLoading}
             error={weatherQuery.error}
           />
           <AirQualityCard
-            airQualityText={airQualityQuery.data || ''}
+            airQualityData={airQualityQuery.data}
             isLoading={airQualityQuery.isLoading}
             error={airQualityQuery.error}
           />

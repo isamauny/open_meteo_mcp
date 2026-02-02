@@ -1,0 +1,59 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6">
+  <diagram name="Page-1" id="18HDyFrSG0L73frabxOf">
+    <mxGraphModel dx="691" dy="450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=15;align=left;fontStyle=1" value="&amp;nbsp; &amp;nbsp;Asgardeo" vertex="1">
+          <mxGeometry height="140" width="330" x="120" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="MCP Client" vertex="1">
+          <mxGeometry height="40" width="120" x="300" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" value="MCP Serve&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;r&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(read_airquality scope)&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="120" x="300" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-10" edge="1" parent="1" source="euIjjCpG0hvaJ4Cw_eAk-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="540" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-11" connectable="0" parent="euIjjCpG0hvaJ4Cw_eAk-10" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Invoke tool (token)" vertex="1">
+          <mxGeometry relative="1" x="-0.2406" y="1" as="geometry">
+            <mxPoint x="10" y="-9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="MCP Client App" vertex="1">
+          <mxGeometry height="60" width="290" x="120" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-5" edge="1" parent="1" source="euIjjCpG0hvaJ4Cw_eAk-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.303;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="euIjjCpG0hvaJ4Cw_eAk-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="255" />
+              <mxPoint x="220" y="255" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-6" connectable="0" parent="euIjjCpG0hvaJ4Cw_eAk-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Login" vertex="1">
+          <mxGeometry relative="1" x="0.1926" y="-2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-7" edge="1" parent="1" source="euIjjCpG0hvaJ4Cw_eAk-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.606;entryY=0.006;entryDx=0;entryDy=0;entryPerimeter=0;" target="euIjjCpG0hvaJ4Cw_eAk-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-8" connectable="0" parent="euIjjCpG0hvaJ4Cw_eAk-7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="JWT" vertex="1">
+          <mxGeometry relative="1" x="0.1323" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=right;" value="&lt;b&gt;MCP Server&lt;/b&gt;&lt;div&gt;- get_weather&lt;/div&gt;&lt;div&gt;- get_airquality (scope required)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="240" x="540" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="euIjjCpG0hvaJ4Cw_eAk-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;AUTH&lt;/b&gt;&lt;div&gt;(check token + scopes)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="60" width="60" x="540" y="280" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -22,7 +22,7 @@ export const oidcConfig: AuthProviderProps = {
   post_logout_redirect_uri: window.location.origin,
 
   // OAuth2 scopes to request
-  scope: 'openid profile email',
+  scope: 'openid read_airquality',
 
   // Use Authorization Code flow (PKCE is automatic)
   response_type: 'code',
