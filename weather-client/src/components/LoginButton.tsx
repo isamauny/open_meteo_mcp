@@ -38,12 +38,30 @@ export function LoginButton({ large = false }: LoginButtonProps) {
 
     const handleSignOut = async () => {
       try {
-        // Try OIDC logout first
-        await auth.signoutRedirect();
-      } catch (error) {
-        console.warn('OIDC logout failed, clearing local session:', error);
-        // Fall back to local logout (just clear the session)
+        // For Asgardeo MCP Client Apps, use local logout
+        // MCP Client Apps may not support standard OIDC RP-initiated logout
+        console.log('Signing out (local session clear)...');
+
         await auth.removeUser();
+
+        console.log('Session cleared successfully');
+
+        // Clear any additional storage
+        sessionStorage.clear();
+
+        // Redirect to home page
+        window.location.href = '/';
+      } catch (error) {
+        console.error('Logout error:', error);
+
+        // Force clear and redirect even if error occurs
+        try {
+          sessionStorage.clear();
+        } catch (e) {
+          console.error('Failed to clear sessionStorage:', e);
+        }
+
+        // Redirect anyway
         window.location.href = '/';
       }
     };

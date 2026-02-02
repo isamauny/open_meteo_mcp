@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { AirQualityData } from '../types/weather';
+import { ScopeRequiredError } from '../types/errors';
+import { ScopeRequiredCard } from './ScopeRequiredCard';
 
 interface AirQualityCardProps {
   airQualityData?: AirQualityData | null;
@@ -75,6 +77,19 @@ export function AirQualityCard({ airQualityData, isLoading, error }: AirQualityC
   }
 
   if (error) {
+    // Check if this is a scope required error per MCP specification
+    if (ScopeRequiredError.isScopeRequiredError(error)) {
+      return (
+        <ScopeRequiredCard
+          requiredScopes={error.requiredScopes}
+          availableScopes={error.availableScopes}
+          message={error.message}
+          resourceMetadataUrl={error.resourceMetadataUrl}
+        />
+      );
+    }
+
+    // Generic error display
     return (
       <div className="bg-red-50 border border-red-200 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-red-700 mb-2">Air Quality Error</h3>

@@ -1,7 +1,7 @@
 {
   "name": "weather-client",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,12 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "lucide-react": "^0.563.0",
+    "oidc-client-ts": "^3.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
     "react-oidc-context": "^3.2.0",
-    "oidc-client-ts": "^3.1.0",
-    "@tanstack/react-query": "^5.62.0"
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { WeatherSearch } from './WeatherSearch';
 import { WeatherCard } from './WeatherCard';
 import { AirQualityCard } from './AirQualityCard';
+import { ToolsAccessCard } from './ToolsAccessCard';
 import { useCurrentWeather } from '../hooks/useWeather';
 import { useAirQuality } from '../hooks/useAirQuality';
 
@@ -19,6 +20,9 @@ export function WeatherDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Tools Access Card - shows which tools user can access */}
+      <ToolsAccessCard />
+
       <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
         <h2 className="text-xl font-semibold text-white mb-4">Search Weather</h2>
         <WeatherSearch onSearch={handleSearch} isLoading={isLoading} />

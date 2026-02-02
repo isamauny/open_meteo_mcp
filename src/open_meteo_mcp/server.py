@@ -42,6 +42,13 @@ from .tools.tools_air_quality import (
     GetAirQualityDetailsToolHandler,
 )
 
+# Import ScopeRequiredError for exception handling (optional auth module)
+try:
+    from .auth.exceptions import ScopeRequiredError
+    SCOPE_ERROR_CLASS = ScopeRequiredError
+except ImportError:
+    SCOPE_ERROR_CLASS = None
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp-weather")
@@ -296,7 +303,35 @@ async def call_tool(name: str, arguments: Any) -> Sequence[TextContent | ImageCo
         return result
 
     except Exception as e:
-        logger.exception(f"Error executing tool {name}: {str(e)}")
+        # Handle ScopeRequiredError per MCP specification for OAuth 2.0 authorization
+        if SCOPE_ERROR_CLASS and isinstance(e, SCOPE_ERROR_CLASS):
+            logger.warning(f"Scope error in tool {name}: {str(e)}")
+
+            # Generate WWW-Authenticate header (for demo/logging purposes)
+            www_authenticate = e.get_www_authenticate_header()
+            logger.info(f"WWW-Authenticate: {www_authenticate}")
+
+            # Return scope error as structured JSON that the client can parse
+            import json
+            error_response = {
+                "error": "insufficient_scope",
+                "message": e.message,
+                "required_scopes": e.required_scopes,
+                "available_scopes": e.available_scopes,
+                "status_code": 401,
+                "www_authenticate": www_authenticate
+            }
+            if e.resource_metadata_url:
+                error_response["resource_metadata_url"] = e.resource_metadata_url
+
+            return [
+                TextContent(
+                    type="text",
+                    text=json.dumps(error_response, indent=2)
+                )
+            ]
+
+        logger.exception(f"Unexpected error in {name}: {str(e)}")
         error_traceback = traceback.format_exc()
         logger.error(f"Full traceback: {error_traceback}")
 

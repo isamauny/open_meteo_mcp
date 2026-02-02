@@ -13,12 +13,9 @@ import httpx
 from jose import jwt, JWTError
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError
 
+from .exceptions import TokenValidationError
+
 logger = logging.getLogger("mcp-weather.auth")
-
-
-class TokenValidationError(Exception):
-    """Raised when token validation fails."""
-    pass
 
 
 class WSO2TokenValidator:

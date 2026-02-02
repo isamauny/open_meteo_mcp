@@ -1,8 +1,5 @@
-[![smithery badge](https://smithery.ai/badge/@isamauny/open_meteo_mcp)](https://smithery.ai/server/@isamauny/open_meteo_mcp)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/open-meteo-mcp)](https://pypi.org/project/open-meteo-mcp/)
 [![PyPI - Version](https://img.shields.io/pypi/v/open-meteo-mcp)](https://pypi.org/project/open-meteo-mcp/)
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/open-meteo-mcp?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/open-meteo-mcp)
-[![Docker Pulls](https://img.shields.io/docker/pulls/dog830228/mcp_weather_server)](https://hub.docker.com/r/dog830228/mcp_weather_server)
 
 # Open Meteo MCP Server
 
@@ -684,6 +681,404 @@ When running in SSE mode, you can integrate the weather server with web applicat
 </body>
 </html>
 ```
+
+## MCP Client (Web Application)
+
+The project includes a **React-based MCP Client** application that demonstrates how to integrate with the Open Meteo MCP Server using the MCP Streamable HTTP protocol. The client provides a user-friendly web interface for accessing weather and air quality data.
+
+### Features
+
+- **MCP Streamable HTTP Protocol**: Implements the MCP protocol for client-server communication
+- **OAuth2/OIDC Authentication**: Supports secure authentication via WSO2 Identity Server or Asgardeo
+- **Session Management**: Maintains stateful sessions with the MCP server
+- **React Hooks**: Modern React hooks for data fetching and state management
+- **TypeScript**: Fully typed client library for type-safe development
+- **Responsive UI**: Built with Tailwind CSS for a modern, responsive design
+
+### Architecture
+
+The client application consists of:
+
+- **MCP Client Library** ([mcpClient.ts](weather-client/src/services/mcpClient.ts)) - Core MCP protocol implementation
+- **React Hooks** - Custom hooks for weather and air quality data
+- **Authentication** - OAuth2/OIDC integration with WSO2 IS
+- **UI Components** - Weather cards, air quality displays, search interface
+
+### Installation
+
+Navigate to the weather-client directory and install dependencies:
+
+```bash
+cd weather-client
+npm install
+```
+
+### Configuration
+
+Create a [.env](weather-client/.env) file in the `weather-client` directory with the following variables:
+
+```bash
+# MCP Server Configuration
+VITE_MCP_SERVER_URL=http://localhost:8080
+
+# OAuth2/OIDC Configuration (WSO2 IS or Asgardeo)
+VITE_WSO2_IS_URL=https://your-wso2-is.com/oauth2
+VITE_WSO2_CLIENT_ID=weather-client
+
+# For Asgardeo (SaaS):
+# VITE_WSO2_IS_URL=https://api.asgardeo.io/t/{your-org}/oauth2
+```
+
+**Configuration Options:**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_MCP_SERVER_URL` | MCP server base URL | `http://localhost:8080` |
+| `VITE_WSO2_IS_URL` | OAuth2 authority URL | `https://localhost:9443/oauth2` |
+| `VITE_WSO2_CLIENT_ID` | OAuth2 client ID | `weather-client` |
+
+### Running the Client
+
+#### Development Mode
+
+The client uses Vite for development with hot module replacement:
+
+```bash
+# Start the development server (default: http://localhost:5173)
+npm run dev
+```
+
+**Important:** The Vite dev server proxies `/mcp` requests to the MCP server, so make sure your MCP server is running:
+
+```bash
+# In a separate terminal, start the MCP server
+python -m open_meteo_mcp --mode streamable-http --host 0.0.0.0 --port 8080
+```
+
+#### Production Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview the production build
+npm run preview
+```
+
+### Authentication Setup
+
+The client supports OAuth2/OIDC authentication via WSO2 Identity Server or Asgardeo.
+
+#### WSO2 Identity Server Setup
+
+1. **Create an Application** in WSO2 IS:
+   - Application type: Single Page Application
+   - Grant types: Authorization Code with PKCE
+   - Callback URLs: `http://localhost:5173/callback` (dev), `https://your-domain.com/callback` (prod)
+   - Allowed origins: `http://localhost:5173` (dev), `https://your-domain.com` (prod)
+
+2. **Configure Scopes**:
+   - Add `openid` (required)
+   - Add `read_airquality` or other custom scopes as needed
+
+3. **Update [.env](weather-client/.env)**:
+   ```bash
+   VITE_WSO2_IS_URL=https://your-wso2-is.com/oauth2
+   VITE_WSO2_CLIENT_ID=your-client-id
+   ```
+
+#### Asgardeo Setup (Cloud)
+
+[Asgardeo](https://asgardeo.io/) is WSO2's cloud identity platform:
+
+1. **Register an Application** at [console.asgardeo.io](https://console.asgardeo.io)
+2. **Configure OAuth2 settings**:
+   - Authorized redirect URLs: `http://localhost:5173/callback`
+   - Allowed origins: `http://localhost:5173`
+   - Grant types: Code
+3. **Update [.env](weather-client/.env)**:
+   ```bash
+   VITE_WSO2_IS_URL=https://api.asgardeo.io/t/{your-org}/oauth2
+   VITE_WSO2_CLIENT_ID=your-client-id
+   ```
+
+### Using the MCP Client Library
+
+The client library ([mcpClient.ts](weather-client/src/services/mcpClient.ts)) provides functions for calling MCP tools.
+
+#### Basic Usage
+
+```typescript
+import {
+  initializeSession,
+  getCurrentWeather,
+  getAirQuality,
+  callMcpTool
+} from './services/mcpClient';
+
+// Initialize the MCP session (required before making tool calls)
+await initializeSession(accessToken);
+
+// Get current weather
+const weather = await getCurrentWeather('Tokyo', accessToken);
+console.log(weather);
+
+// Get air quality with specific variables
+const airQuality = await getAirQuality(
+  'Beijing',
+  ['pm2_5', 'pm10', 'ozone'],
+  accessToken
+);
+console.log(airQuality);
+```
+
+#### Using React Hooks
+
+The client includes custom React hooks for easy integration:
+
+```typescript
+import { useCurrentWeather } from './hooks/useWeather';
+import { useAirQuality } from './hooks/useAirQuality';
+
+function WeatherComponent() {
+  const { data: weather, isLoading, error } = useCurrentWeather('Tokyo');
+  const { data: airQuality } = useAirQuality('Tokyo');
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      <h2>Weather in Tokyo</h2>
+      <p>Temperature: {weather.current_weather.temperature}°C</p>
+      <p>Humidity: {weather.current_weather.humidity}%</p>
+    </div>
+  );
+}
+```
+
+### MCP Client API Reference
+
+#### Session Management
+
+**`initializeSession(accessToken?: string): Promise<void>`**
+
+Initializes the MCP session with the server. Must be called before making tool calls.
+
+- `accessToken` - Optional OAuth2 access token for authentication
+
+#### Weather Functions
+
+**`getCurrentWeather(city: string, accessToken?: string): Promise<string>`**
+
+Get current weather for a city.
+
+**`getWeatherDetails(city: string, includeForecast: boolean, accessToken?: string): Promise<string>`**
+
+Get detailed weather data as JSON.
+
+**`getWeatherByDateRange(city: string, startDate: string, endDate: string, accessToken?: string): Promise<string>`**
+
+Get weather for a date range.
+
+#### Air Quality Functions
+
+**`getAirQuality(city: string, variables?: string[], accessToken?: string): Promise<string>`**
+
+Get air quality information for a city.
+
+- `variables` - Optional array of pollutants: `['pm2_5', 'pm10', 'ozone', 'nitrogen_dioxide', 'carbon_monoxide']`
+
+**`getAirQualityDetails(city: string, variables?: string[], accessToken?: string): Promise<string>`**
+
+Get detailed air quality data as JSON.
+
+#### Time Functions
+
+**`getCurrentDateTime(timezone: string, accessToken?: string): Promise<string>`**
+
+Get current time in a specific timezone.
+
+**`getTimezoneInfo(timezone: string, accessToken?: string): Promise<string>`**
+
+Get timezone information.
+
+**`convertTime(datetime: string, fromTimezone: string, toTimezone: string, accessToken?: string): Promise<string>`**
+
+Convert time between timezones.
+
+#### Generic Tool Call
+
+**`callMcpTool(toolName: string, args: Record<string, unknown>, accessToken?: string): Promise<string>`**
+
+Call any MCP tool by name with custom arguments.
+
+```typescript
+// Example: Call a custom tool
+const result = await callMcpTool(
+  'get_current_weather',
+  { city: 'Paris' },
+  accessToken
+);
+```
+
+### Client Project Structure
+
+```
+weather-client/
+├── src/
+│   ├── components/          # React UI components
+│   │   ├── WeatherDashboard.tsx
+│   │   ├── WeatherCard.tsx
+│   │   ├── AirQualityCard.tsx
+│   │   ├── WeatherSearch.tsx
+│   │   ├── LoginButton.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── hooks/              # React hooks
+│   │   ├── useWeather.ts   # Weather data hooks
+│   │   └── useAirQuality.ts # Air quality hooks
+│   ├── services/           # Core services
+│   │   └── mcpClient.ts    # MCP client implementation
+│   ├── config/             # Configuration
+│   │   └── auth.ts         # OAuth2/OIDC config
+│   ├── types/              # TypeScript types
+│   │   └── weather.ts      # Type definitions
+│   ├── App.tsx             # Main app component
+│   └── main.tsx            # Entry point
+├── public/                 # Static assets
+├── .env                    # Environment configuration
+├── vite.config.ts          # Vite configuration
+├── tailwind.config.js      # Tailwind CSS config
+└── package.json            # Dependencies
+```
+
+### Development
+
+#### Adding New MCP Tools
+
+To add support for new MCP tools in the client:
+
+1. Add the function to [mcpClient.ts](weather-client/src/services/mcpClient.ts):
+
+```typescript
+export async function getNewTool(
+  arg1: string,
+  accessToken?: string
+): Promise<string> {
+  return callMcpTool('tool_name', { arg1 }, accessToken);
+}
+```
+
+2. Create a custom hook in `hooks/`:
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from 'react-oidc-context';
+import { getNewTool, initializeSession } from '../services/mcpClient';
+
+export function useNewTool(arg1: string | null) {
+  const auth = useAuth();
+  const accessToken = auth.user?.access_token;
+
+  return useQuery({
+    queryKey: ['newTool', arg1],
+    queryFn: async () => {
+      if (!arg1) throw new Error('Argument required');
+      await initializeSession(accessToken);
+      return await getNewTool(arg1, accessToken);
+    },
+    enabled: !!arg1 && auth.isAuthenticated,
+  });
+}
+```
+
+3. Use the hook in your components:
+
+```typescript
+const { data, isLoading, error } = useNewTool('value');
+```
+
+#### Vite Proxy Configuration
+
+The client uses Vite's proxy feature to forward `/mcp` requests to the MCP server during development. This is configured in [vite.config.ts](weather-client/vite.config.ts):
+
+```typescript
+export default defineConfig({
+  server: {
+    proxy: {
+      '/mcp': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
+### Deployment
+
+#### Static Hosting (Netlify, Vercel, etc.)
+
+1. Build the client:
+   ```bash
+   npm run build
+   ```
+
+2. Deploy the `dist/` directory to your hosting provider
+
+3. Configure environment variables on your hosting platform:
+   - `VITE_MCP_SERVER_URL` - Your production MCP server URL
+   - `VITE_WSO2_IS_URL` - Your OAuth2 authority
+   - `VITE_WSO2_CLIENT_ID` - Your OAuth2 client ID
+
+4. Update OAuth2 redirect URIs to include your production domain
+
+#### Docker
+
+You can also containerize the client application:
+
+```dockerfile
+# Dockerfile for weather-client
+FROM node:20-alpine as build
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+### Security Considerations
+
+- **Token Storage**: Access tokens are stored in `sessionStorage` (cleared on tab close)
+- **HTTPS**: Always use HTTPS in production for secure token transmission
+- **CORS**: Configure CORS on the MCP server to allow requests from your client domain
+- **Token Expiration**: The client includes token refresh logic (configure `automaticSilentRenew`)
+
+### Troubleshooting
+
+**CORS Errors**
+- Ensure the MCP server includes CORS headers
+- Check that your origin is allowed in the server configuration
+
+**Authentication Fails**
+- Verify OAuth2 configuration in [.env](weather-client/.env)
+- Check redirect URIs match exactly (including trailing slashes)
+- Ensure the MCP server is running with authentication enabled
+
+**MCP Connection Errors**
+- Verify the MCP server is running on the configured port
+- Check that `VITE_MCP_SERVER_URL` points to the correct server
+- Ensure the server is in `streamable-http` mode
+
+**Session Issues**
+- Session IDs are managed automatically via HTTP headers
+- Clear sessionStorage if you encounter stale session errors
 
 ## Docker Deployment
 

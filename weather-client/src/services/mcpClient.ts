@@ -1,5 +1,6 @@
 import { mcpConfig } from '../config/auth';
 import type { McpResponse } from '../types/weather';
+import { parseScopeError } from '../types/errors';
 
 /**
  * MCP Client for communicating with the Weather MCP Server.
@@ -174,9 +175,28 @@ export async function callMcpTool(
   }
 
   if (!response.ok) {
+    // For 401 errors, check if it's a scope error per MCP specification
     if (response.status === 401) {
-      throw new Error('Authentication required. Please sign in.');
+      try {
+        const errorBody = await response.json();
+        const scopeError = await parseScopeError(response, errorBody);
+        if (scopeError) {
+          // This is a scope error - throw it for special handling
+          throw scopeError;
+        }
+        // Generic 401 error
+        throw new Error(errorBody.message || 'Authentication required. Please sign in.');
+      } catch (e) {
+        // If it's already a ScopeRequiredError, re-throw it
+        if (e instanceof Error && e.name === 'ScopeRequiredError') {
+          throw e;
+        }
+        // Failed to parse error body
+        throw new Error('Authentication required. Please sign in.');
+      }
     }
+
+    // Other error status codes
     const error = await response.text();
     throw new Error(`MCP call failed: ${response.status} ${error}`);
   }
@@ -192,7 +212,30 @@ export async function callMcpTool(
     throw new Error('Empty response from MCP server');
   }
 
-  return data.result.content[0].text;
+  const resultText = data.result.content[0].text;
+
+  // Check if the result is a scope error JSON (MCP returns 200 OK with error in body)
+  try {
+    const parsed = JSON.parse(resultText);
+    if (parsed.error === 'insufficient_scope' && parsed.required_scopes) {
+      // This is a scope error - create and throw ScopeRequiredError
+      const { ScopeRequiredError } = await import('../types/errors');
+      throw new ScopeRequiredError(
+        parsed.message || 'Insufficient scope',
+        parsed.required_scopes,
+        parsed.available_scopes || [],
+        parsed.resource_metadata_url
+      );
+    }
+  } catch (e) {
+    // If it's already a ScopeRequiredError, re-throw it
+    if (e instanceof Error && e.name === 'ScopeRequiredError') {
+      throw e;
+    }
+    // If JSON.parse failed, it's normal text response, continue
+  }
+
+  return resultText;
 }
 
 /**

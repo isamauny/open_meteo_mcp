@@ -54,7 +54,9 @@ class GetAirQualityToolHandler(ToolHandler):
             name=self.name,
             description="""Get air quality information for a specified city including PM2.5, PM10,
             ozone, nitrogen dioxide, carbon monoxide, and other pollutants. Provides health
-            advisories based on current air quality levels.""",
+            advisories based on current air quality levels.
+
+            **Required OAuth2 Scope**: read_airquality""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -81,7 +83,8 @@ class GetAirQualityToolHandler(ToolHandler):
                         "description": "Air quality variables to retrieve. If not specified, defaults to pm10, pm2_5, ozone, nitrogen_dioxide, and carbon_monoxide."
                     }
                 },
-                "required": ["city"]
+                "required": ["city"],
+                "x-required-scopes": ["read_airquality"]
             }
         )
 
@@ -136,30 +139,40 @@ class GetAirQualityToolHandler(ToolHandler):
                 )
             ]
 
-        except PermissionError as e:
-            logger.warning(f"Permission denied for air quality: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=f"Access denied: {str(e)}"
-                )
-            ]
-        except ValueError as e:
-            logger.error(f"Air quality service error: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=f"Error: {str(e)}"
-                )
-            ]
         except Exception as e:
-            logger.exception(f"Unexpected error in get_air_quality: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=f"Unexpected error occurred: {str(e)}"
-                )
-            ]
+            # Re-raise ScopeRequiredError to be handled by middleware per MCP spec
+            try:
+                from ..auth.exceptions import ScopeRequiredError
+                if isinstance(e, ScopeRequiredError):
+                    raise  # Let middleware handle with proper WWW-Authenticate headers
+            except ImportError:
+                pass  # Auth module not installed
+
+            # Handle other exceptions
+            if isinstance(e, PermissionError):
+                logger.warning(f"Permission denied for air quality: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Access denied: {str(e)}"
+                    )
+                ]
+            elif isinstance(e, ValueError):
+                logger.error(f"Air quality service error: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Error: {str(e)}"
+                    )
+                ]
+            else:
+                logger.exception(f"Unexpected error in get_air_quality: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"Unexpected error occurred: {str(e)}"
+                    )
+                ]
 
 
 class GetAirQualityDetailsToolHandler(ToolHandler):
@@ -180,7 +193,9 @@ class GetAirQualityDetailsToolHandler(ToolHandler):
         return Tool(
             name=self.name,
             description="""Get detailed air quality information for a specified city as structured JSON data.
-            This tool provides raw air quality data for programmatic analysis and processing.""",
+            This tool provides raw air quality data for programmatic analysis and processing.
+
+            **Required OAuth2 Scope**: read_airquality""",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -207,7 +222,8 @@ class GetAirQualityDetailsToolHandler(ToolHandler):
                         "description": "Air quality variables to retrieve"
                     }
                 },
-                "required": ["city"]
+                "required": ["city"],
+                "x-required-scopes": ["read_airquality"]
             }
         )
 
@@ -258,27 +274,37 @@ class GetAirQualityDetailsToolHandler(ToolHandler):
                 )
             ]
 
-        except PermissionError as e:
-            logger.warning(f"Permission denied for air quality details: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps({"error": "permission_denied", "message": str(e)}, indent=2)
-                )
-            ]
-        except ValueError as e:
-            logger.error(f"Air quality service error: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps({"error": str(e)}, indent=2)
-                )
-            ]
         except Exception as e:
-            logger.exception(f"Unexpected error in get_air_quality_details: {str(e)}")
-            return [
-                TextContent(
-                    type="text",
-                    text=json.dumps({"error": f"Unexpected error occurred: {str(e)}"}, indent=2)
-                )
-            ]
+            # Re-raise ScopeRequiredError to be handled by middleware per MCP spec
+            try:
+                from ..auth.exceptions import ScopeRequiredError
+                if isinstance(e, ScopeRequiredError):
+                    raise  # Let middleware handle with proper WWW-Authenticate headers
+            except ImportError:
+                pass  # Auth module not installed
+
+            # Handle other exceptions
+            if isinstance(e, PermissionError):
+                logger.warning(f"Permission denied for air quality details: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": "permission_denied", "message": str(e)}, indent=2)
+                    )
+                ]
+            elif isinstance(e, ValueError):
+                logger.error(f"Air quality service error: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": str(e)}, indent=2)
+                    )
+                ]
+            else:
+                logger.exception(f"Unexpected error in get_air_quality_details: {str(e)}")
+                return [
+                    TextContent(
+                        type="text",
+                        text=json.dumps({"error": f"Unexpected error occurred: {str(e)}"}, indent=2)
+                    )
+                ]
