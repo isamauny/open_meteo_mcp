@@ -39,15 +39,7 @@ A Model Context Protocol (MCP) server that provides weather information using th
 
 ## Installation
 
-### Installing via Smithery
-
-To install Open Meteo MCP Server automatically via [Smithery](https://smithery.ai/server/@isamauny/open_meteo_mcp):
-
-```bash
-npx -y @smithery/cli install @isamauny/open_meteo_mcp
-```
-
-### Standard Installation (for MCP clients like Claude Desktop)
+### Standard Installation
 
 This package can be installed using pip:
 
@@ -55,7 +47,7 @@ This package can be installed using pip:
 pip install open_meteo_mcp
 ```
 
-### Manual Configuration for MCP Clients
+### Manual Configuration for MCP Clients (Cline)
 
 This server is designed to be installed manually by adding its configuration to the `cline_mcp_settings.json` file.
 
@@ -233,7 +225,7 @@ python -m open_meteo_mcp --mode streamable-http
 
 No additional configuration is required. The server will log: `"Authentication disabled - server is open"`
 
-### Secured Mode (WSO2 IS Authentication)
+### Secured Mode (WSO2 Identity Server/Asgardeo Authentication)
 
 For production deployments or when you need to secure your MCP server endpoints, you can enable **JWT token authentication** using WSO2 Identity Server.
 
@@ -248,7 +240,7 @@ For production deployments or when you need to secure your MCP server endpoints,
    pip install pyjwt cryptography
    ```
 
-2. Set up WSO2 Identity Server (or compatible OAuth2/OIDC provider)
+2. Set up WSO2 Identity Server
 3. Configure environment variables (see below)
 
 #### Configuration
@@ -257,9 +249,10 @@ Enable authentication by setting the following environment variables:
 
 **Required:**
 - `AUTH_ENABLED=true` - Enables authentication
-- `WSO2_IS_URL` - Your WSO2 IS base URL (e.g., `https://your-wso2-is.com`)
+- `WSO2_IS_URL` - Your WSO2 IS base URL (e.g., `https://your-wso2-is.com` or `https://api.asgardeo.io/t/{orgName}`
 
 **Optional:**
+
 - `WSO2_IS_AUDIENCE` - Expected audience claim / client_id for token validation
 - `WSO2_VERIFY_SSL` - Set to `false` to disable SSL verification (local dev only, default: `true`)
 
@@ -1015,44 +1008,6 @@ export default defineConfig({
 });
 ```
 
-### Deployment
-
-#### Static Hosting (Netlify, Vercel, etc.)
-
-1. Build the client:
-   ```bash
-   npm run build
-   ```
-
-2. Deploy the `dist/` directory to your hosting provider
-
-3. Configure environment variables on your hosting platform:
-   - `VITE_MCP_SERVER_URL` - Your production MCP server URL
-   - `VITE_WSO2_IS_URL` - Your OAuth2 authority
-   - `VITE_WSO2_CLIENT_ID` - Your OAuth2 client ID
-
-4. Update OAuth2 redirect URIs to include your production domain
-
-#### Docker
-
-You can also containerize the client application:
-
-```dockerfile
-# Dockerfile for weather-client
-FROM node:20-alpine as build
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
 ### Security Considerations
 
 - **Token Storage**: Access tokens are stored in `sessionStorage` (cleared on tab close)
@@ -1080,79 +1035,7 @@ CMD ["nginx", "-g", "daemon off;"]
 - Session IDs are managed automatically via HTTP headers
 - Clear sessionStorage if you encounter stale session errors
 
-## Docker Deployment
-
-The project is available as a Docker image on Docker Hub and includes configurations for easy deployment.
-
-### Quick Start with Docker Hub
-
-Pull and run the latest image directly from Docker Hub:
-
-#### Un-secured Mode (Default)
-
-```bash
-# Pull the latest image
-docker pull dog830228/mcp_weather_server:latest
-
-# Run in stdio mode (default)
-docker run dog830228/mcp_weather_server:latest
-
-# Run in SSE mode on port 8080 (un-secured)
-docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode sse
-
-# Run in streamable-http mode on port 8080 (un-secured)
-docker run -p 8080:8080 dog830228/mcp_weather_server:latest --mode streamable-http
-
-# Pull a specific version
-docker pull dog830228/mcp_weather_server:0.5.0
-docker run -p 8080:8080 dog830228/mcp_weather_server:0.5.0 --mode sse
-```
-
-#### Secured Mode (WSO2 IS Authentication)
-
-```bash
-# Run in streamable-http mode with WSO2 IS authentication
-docker run -p 8080:8080 \
-  -e AUTH_ENABLED=true \
-  -e WSO2_IS_URL="https://your-wso2-is.com" \
-  -e WSO2_IS_AUDIENCE="your-client-id" \
-  dog830228/mcp_weather_server:latest \
-  --mode streamable-http
-
-# Run with authentication and debug logging
-docker run -p 8080:8080 \
-  -e AUTH_ENABLED=true \
-  -e WSO2_IS_URL="https://your-wso2-is.com" \
-  -e WSO2_IS_AUDIENCE="your-client-id" \
-  dog830228/mcp_weather_server:latest \
-  --mode streamable-http --debug
-
-# Run with authentication in stateless mode
-docker run -p 8080:8080 \
-  -e AUTH_ENABLED=true \
-  -e WSO2_IS_URL="https://your-wso2-is.com" \
-  -e WSO2_IS_AUDIENCE="your-client-id" \
-  dog830228/mcp_weather_server:latest \
-  --mode streamable-http --stateless
-
-# For local development with self-signed certificates
-docker run -p 8080:8080 \
-  -e AUTH_ENABLED=true \
-  -e WSO2_IS_URL="https://localhost:9443" \
-  -e WSO2_VERIFY_SSL=false \
-  -e WSO2_IS_AUDIENCE="your-client-id" \
-  dog830228/mcp_weather_server:latest \
-  --mode streamable-http --debug
-```
-
-### Available Docker Images
-
-- **Latest**: `dog830228/mcp_weather_server:latest`
-- **Versioned**: `dog830228/mcp_weather_server:<version>` (e.g., `0.5.0`)
-
-Images are automatically built and published when new versions are released.
-
-### Building from Source
+### Building Docker images from Source
 
 If you want to build the Docker image yourself:
 
@@ -1352,7 +1235,3 @@ The server returns structured error messages:
   "message": "Missing Authorization header"
 }
 ```
-
-
-<!-- Need to add this line for MCP registry publication -->
-<!-- mcp-name: io.github.isamauny/open_meteo_mcp -->
