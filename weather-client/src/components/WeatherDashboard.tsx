@@ -29,7 +29,15 @@ export function WeatherDashboard() {
       </div>
 
       {searchCity && (
-        <div className="grid md:grid-cols-2 gap-6">
+        <>
+          <button
+            onClick={() => setSearchCity(null)}
+            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+          >
+            <span>←</span>
+            <span>Back to cities</span>
+          </button>
+          <div className="grid md:grid-cols-2 gap-6">
           <WeatherCard
             weatherData={weatherQuery.data}
             isLoading={weatherQuery.isLoading}
@@ -40,17 +48,18 @@ export function WeatherDashboard() {
             isLoading={airQualityQuery.isLoading}
             error={airQualityQuery.error}
           />
-        </div>
+          </div>
+        </>
       )}
 
       {!searchCity && (
         <div className="grid md:grid-cols-3 gap-6">
+          <QuickCityCard city="Madrid" onSelect={handleSearch} />
+          <QuickCityCard city="Barcelona" onSelect={handleSearch} />
+          <QuickCityCard city="Valencia" onSelect={handleSearch} />
           <QuickCityCard city="London" onSelect={handleSearch} />
-          <QuickCityCard city="New York" onSelect={handleSearch} />
-          <QuickCityCard city="Tokyo" onSelect={handleSearch} />
-          <QuickCityCard city="Sydney" onSelect={handleSearch} />
           <QuickCityCard city="Paris" onSelect={handleSearch} />
-          <QuickCityCard city="Dubai" onSelect={handleSearch} />
+          <QuickCityCard city="New York" onSelect={handleSearch} />
         </div>
       )}
     </div>

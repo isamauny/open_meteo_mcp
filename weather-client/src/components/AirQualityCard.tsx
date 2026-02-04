@@ -50,8 +50,8 @@ function getQualityStyles(level: QualityLevel) {
   }
 }
 
-function PollutantMetric({ label, value, unit = '' }: { label: string; value?: number; unit?: string }) {
-  if (value === undefined) return null;
+function PollutantMetric({ label, value, unit = '' }: { label: string; value?: number | null; unit?: string }) {
+  if (value == null) return null;
   return (
     <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
       <span className="text-gray-600">{label}</span>
