@@ -4,5 +4,7 @@ venv/
 .pytest_cache/
 node_modules
 docs/.$Deployment.drawio.bkp
-src/open_meteo_mcp.egg-info/SOURCES.txt
 .DS_Store
+TESTING_SCOPE_AUTH.md
+weather-client/MCP_CLIENT_APP_NOTES.md
+SOURCES.txt
