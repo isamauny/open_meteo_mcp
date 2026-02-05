@@ -7,6 +7,56 @@ mcp-name: io.github.isamauny/open_meteo_mcp
 
 A Model Context Protocol (MCP) server that provides weather information using the Open-Meteo API. This server supports multiple transport modes: standard stdio, HTTP Server-Sent Events (SSE), and the new Streamable HTTP protocol for web-based integration.
 
+## Table of Contents
+
+- [Features](#features)
+  - [Weather & Air Quality](#weather--air-quality)
+  - [Time & Timezone](#time--timezone)
+  - [Transport Modes](#transport-modes)
+- [Installation](#installation)
+  - [Standard Installation](#standard-installation)
+  - [Manual Configuration for MCP Clients (Claude Desktop)](#manual-configuration-for-mcp-clients-claude-desktop)
+  - [HTTP Server Installation (for web applications)](#http-server-installation-for-web-applications)
+- [Server Modes](#server-modes)
+  - [Mode Comparison](#mode-comparison)
+  - [1. Standard MCP Mode (Default)](#1-standard-mcp-mode-default)
+  - [2. HTTP SSE Mode (Web Applications)](#2-http-sse-mode-web-applications)
+  - [3. Streamable HTTP Mode (Modern MCP Protocol)](#3-streamable-http-mode-modern-mcp-protocol)
+- [Security & Authentication](#security--authentication)
+  - [Un-secured Mode (Default)](#un-secured-mode-default)
+  - [Secured Mode (WSO2 Identity Server/Asgardeo Authentication)](#secured-mode-wso2-identity-serverasgardeo-authentication)
+  - [Authentication Feature Summary](#authentication-feature-summary)
+- [Configuration](#configuration)
+- [Usage](#usage)
+  - [Available Tools](#available-tools)
+  - [Tool Details](#tool-details)
+- [MCP Client (Web Application)](#mcp-client-web-application)
+  - [Features](#features-1)
+  - [Architecture](#architecture)
+  - [Installation](#installation-1)
+  - [Configuration](#configuration-1)
+  - [Running the Client](#running-the-client)
+  - [Authentication Setup](#authentication-setup)
+  - [Using the MCP Client Library](#using-the-mcp-client-library)
+  - [MCP Client API Reference](#mcp-client-api-reference)
+  - [Client Project Structure](#client-project-structure)
+  - [Development](#development)
+  - [Security Considerations](#security-considerations)
+  - [Troubleshooting](#troubleshooting)
+  - [Building Docker images from Source](#building-docker-images-from-source)
+- [Development](#development-1)
+  - [Project Structure](#project-structure)
+  - [Running for Development](#running-for-development)
+  - [Adding New Tools](#adding-new-tools)
+- [Dependencies](#dependencies)
+  - [Core Dependencies](#core-dependencies)
+  - [SSE Server Dependencies](#sse-server-dependencies)
+  - [Development Dependencies](#development-dependencies)
+- [API Data Sources](#api-data-sources)
+- [Troubleshooting](#troubleshooting-1)
+  - [Common Issues](#common-issues)
+  - [Error Responses](#error-responses)
+
 ## Features
 
 ### Weather & Air Quality
@@ -41,35 +91,48 @@ A Model Context Protocol (MCP) server that provides weather information using th
 
 ### Standard Installation
 
-This package can be installed using pip:
+This package has been published here: https://pypi.org/project/open-meteo-mcp/ and can be installed locally using pip.
+
+> [!TIP]
+>
+> We recommend to use Python [virtual environments](https://docs.python.org/3/library/venv.html) to separate installs.
 
 ```bash
 pip install open_meteo_mcp
 ```
 
-### Manual Configuration for MCP Clients (Cline)
+### Manual Configuration for MCP Clients (Claude Desktop)
 
-This server is designed to be installed manually by adding its configuration to the `cline_mcp_settings.json` file.
+This server is designed to be installed manually by adding its configuration to the `claude_desktop_config.json` file. 
 
-1. Add the following entry to the `mcpServers` object in your `cline_mcp_settings.json` file:
+> [!TIP]
+>
+> We recommend to install and use [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python package manager)
+
+1. Add the following entry to the `mcpServers` object in the config file - Make sure to use the **full path** to the uvx binary (use `which uvx`on Linux/Mac if you don't know where it was installed.)
 
 ```json
 {
   "mcpServers": {
-    "weather": {
-      "command": "python",
-      "args": [
-        "-m",
-        "open_meteo_mcp"
-      ],
-      "disabled": false,
-      "autoApprove": []
-    }
+    "open_meteo_mcp": {
+        "command": "<fullpath_to_uvx>",
+            "args": [
+                "open_meteo_mcp"
+            ]
+    },
+    ...
   }
 }
 ```
 
-2. Save the `cline_mcp_settings.json` file.
+2. Save the `claude_desktop_config.json` file.
+3. Restart Claude Desktop
+4. Upon restart, test the MCP integration by asking questions such as: "*What is the current weather and air quality in Paris?*" 
+ > [!NOTE]
+ >
+ > You will be asked to authorize the usage of the tools you just installed. 
+
+![](./docs/Claude_Desktop.png)
 
 ### HTTP Server Installation (for web applications)
 
@@ -229,7 +292,9 @@ No additional configuration is required. The server will log: `"Authentication d
 
 For production deployments or when you need to secure your MCP server endpoints, you can enable **JWT token authentication** using WSO2 Identity Server.
 
-**Important:** Authentication is only available in `streamable-http` mode.
+> [!IMPORTANT]
+>
+> Authentication is only available in `streamable-http` mode.
 
 #### Requirements
 
@@ -240,10 +305,11 @@ For production deployments or when you need to secure your MCP server endpoints,
    pip install pyjwt cryptography
    ```
 
-2. Set up WSO2 Identity Server
+2. Set up WSO2 Identity Server/Asgardeo 
+   Instructions are available in the [Asgardeo Setup guide](./weather-client/SECURITY_SETUP_TEST.md) in this repository.
 3. Configure environment variables (see below)
 
-#### Configuration
+#### Server Configuration
 
 Enable authentication by setting the following environment variables:
 
@@ -251,9 +317,9 @@ Enable authentication by setting the following environment variables:
 - `AUTH_ENABLED=true` - Enables authentication
 - `WSO2_IS_URL` - Your WSO2 IS base URL (e.g., `https://your-wso2-is.com` or `https://api.asgardeo.io/t/{orgName}`
 
-**Optional:**
+**Optional** but highly recommended !
 
-- `WSO2_IS_AUDIENCE` - Expected audience claim / client_id for token validation
+- `WSO2_IS_AUDIENCE` - Expected audience claim / client_id for token validation - This is the clientID of the MCP Client application created in IS.
 - `WSO2_VERIFY_SSL` - Set to `false` to disable SSL verification (local dev only, default: `true`)
 
 #### Running in Secured Mode
@@ -270,17 +336,6 @@ export WSO2_IS_AUDIENCE="your-client-id"
 python -m open_meteo_mcp --mode streamable-http --host 0.0.0.0 --port 8080
 ```
 
-**Using Docker:**
-
-```bash
-docker run -p 8080:8080 \
-  -e AUTH_ENABLED=true \
-  -e WSO2_IS_URL="https://your-wso2-is.com" \
-  -e WSO2_IS_AUDIENCE="your-client-id" \
-  dog830228/mcp_weather_server:latest \
-  --mode streamable-http
-```
-
 **For local development with self-signed certificates:**
 
 ```bash
@@ -289,7 +344,7 @@ export WSO2_IS_URL="https://localhost:9443"
 export WSO2_VERIFY_SSL=false
 export WSO2_IS_AUDIENCE="your-client-id"
 
-python -m open_meteo_mcp --mode streamable-http --debug
+python -m open_meteo_mcp --mode streamable-http --host 0.0.0.0 --port 8080
 ```
 
 #### Making Authenticated Requests
@@ -542,139 +597,6 @@ Convert time from one timezone to another.
 
 **Returns:** Converted time in target timezone
 
-## MCP Client Usage Examples
-
-### Using with Claude Desktop or MCP Clients
-
-```xml
-<use_mcp_tool>
-<server_name>weather</server_name>
-<tool_name>get_current_weather</tool_name>
-<arguments>
-{
-  "city": "Tokyo"
-}
-</arguments>
-</use_mcp_tool>
-```
-
-```xml
-<use_mcp_tool>
-<server_name>weather</server_name>
-<tool_name>get_weather_by_datetime_range</tool_name>
-<arguments>
-{
-  "city": "Paris",
-  "start_date": "2024-01-01",
-  "end_date": "2024-01-07"
-}
-</arguments>
-</use_mcp_tool>
-```
-
-```xml
-<use_mcp_tool>
-<server_name>weather</server_name>
-<tool_name>get_current_datetime</tool_name>
-<arguments>
-{
-  "timezone_name": "Europe/Paris"
-}
-</arguments>
-</use_mcp_tool>
-```
-
-```xml
-<use_mcp_tool>
-<server_name>weather</server_name>
-<tool_name>get_air_quality</tool_name>
-<arguments>
-{
-  "city": "Beijing"
-}
-</arguments>
-</use_mcp_tool>
-```
-
-```xml
-<use_mcp_tool>
-<server_name>weather</server_name>
-<tool_name>get_air_quality</tool_name>
-<arguments>
-{
-  "city": "Los Angeles",
-  "variables": ["pm2_5", "pm10", "ozone"]
-}
-</arguments>
-</use_mcp_tool>
-```
-
-## Web Integration (SSE Mode)
-
-When running in SSE mode, you can integrate the weather server with web applications:
-
-### HTML/JavaScript Example
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Weather MCP Client</title>
-</head>
-<body>
-    <div id="weather-data"></div>
-    <script>
-        // Connect to SSE endpoint
-        const eventSource = new EventSource('http://localhost:8080/sse');
-
-        eventSource.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            document.getElementById('weather-data').innerHTML = JSON.stringify(data, null, 2);
-        };
-
-        // Function to get weather
-        async function getWeather(city) {
-            const response = await fetch('http://localhost:8080/messages/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    method: 'tools/call',
-                    params: {
-                        name: 'get_current_weather',
-                        arguments: { city: city }
-                    },
-                    id: 1
-                })
-            });
-        }
-
-        // Example: Get weather for Tokyo
-        getWeather('Tokyo');
-
-        // Example: Get air quality
-        async function getAirQuality(city) {
-            const response = await fetch('http://localhost:8080/messages/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    jsonrpc: '2.0',
-                    method: 'tools/call',
-                    params: {
-                        name: 'get_air_quality',
-                        arguments: { city: city }
-                    },
-                    id: 2
-                })
-            });
-        }
-
-        getAirQuality('Beijing');
-    </script>
-</body>
-</html>
-```
-
 ## MCP Client (Web Application)
 
 The project includes a **React-based MCP Client** application that demonstrates how to integrate with the Open Meteo MCP Server using the MCP Streamable HTTP protocol. The client provides a user-friendly web interface for accessing weather and air quality data.
@@ -765,11 +687,12 @@ The client supports OAuth2/OIDC authentication via WSO2 Identity Server or Asgar
 #### WSO2 Identity Server Setup
 
 1. **Create an Application** in WSO2 IS:
+   
    - Application type: Single Page Application
    - Grant types: Authorization Code with PKCE
    - Callback URLs: `http://localhost:5173/callback` (dev), `https://your-domain.com/callback` (prod)
    - Allowed origins: `http://localhost:5173` (dev), `https://your-domain.com` (prod)
-
+   
 2. **Configure Scopes**:
    - Add `openid` (required)
    - Add `read_airquality` or other custom scopes as needed

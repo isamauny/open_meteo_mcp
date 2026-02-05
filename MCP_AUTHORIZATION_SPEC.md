@@ -2,6 +2,41 @@
 
 This document describes the implementation of OAuth 2.0 Bearer token authorization per the MCP specification.
 
+## Table of Contents
+
+- [Specification Reference](#specification-reference)
+- [Overview](#overview)
+  - [Key Features](#key-features)
+  - [MCP Streamable HTTP Considerations](#mcp-streamable-http-considerations)
+- [Server Implementation](#server-implementation)
+  - [Architecture](#architecture)
+  - [Components](#components)
+- [Client Implementation](#client-implementation)
+  - [Architecture](#architecture-1)
+  - [Components](#components-1)
+- [Example Flow](#example-flow)
+  - [Scenario: User Tries to Access Air Quality Without Required Scope](#scenario-user-tries-to-access-air-quality-without-required-scope)
+- [Configuration](#configuration)
+  - [Server Configuration](#server-configuration)
+  - [Asgardeo Configuration](#asgardeo-configuration)
+  - [Client Configuration](#client-configuration)
+- [Testing](#testing)
+  - [Test Scope Authorization](#test-scope-authorization)
+  - [Test Without Authentication](#test-without-authentication)
+- [Benefits](#benefits)
+  - [For Users](#for-users)
+  - [For Administrators](#for-administrators)
+  - [For Developers](#for-developers)
+- [Scope Best Practices](#scope-best-practices)
+  - [Naming Conventions](#naming-conventions)
+  - [Granularity](#granularity)
+  - [Tool Mapping](#tool-mapping)
+- [Troubleshooting](#troubleshooting)
+  - [Server doesn't return scope error information](#server-doesnt-return-scope-error-information)
+  - [Client doesn't show scope card](#client-doesnt-show-scope-card)
+  - [Scope check always fails](#scope-check-always-fails)
+- [References](#references)
+
 ## Specification Reference
 
 **MCP Authorization Specification:**
